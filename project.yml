@@ -1,0 +1,75 @@
+name: MarkdownViewer
+options:
+  bundleIdPrefix: com.vincent
+  deploymentTarget:
+    macOS: "13.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+  groupSortPosition: top
+  xcodeVersion: "16.0"
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+    CODE_SIGN_IDENTITY: "-"
+    ENABLE_HARDENED_RUNTIME: NO
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    SWIFT_STRICT_CONCURRENCY: minimal
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+
+targets:
+  MarkdownViewer:
+    type: application
+    platform: macOS
+    sources:
+      - path: MarkdownViewer/Sources
+      - path: MarkdownViewer/Resources/web
+        type: folder
+        buildPhase: resources
+      - path: MarkdownViewer/Resources/Assets.xcassets
+        buildPhase: resources
+    info:
+      path: MarkdownViewer/Info.plist
+      properties:
+        CFBundleDisplayName: MarkdownViewer
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        LSMinimumSystemVersion: "13.0"
+        NSHighResolutionCapable: true
+        NSPrincipalClass: NSApplication
+        NSSupportsAutomaticGraphicsSwitching: true
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+        UTImportedTypeDeclarations:
+          - UTTypeIdentifier: net.daringfireball.markdown
+            UTTypeDescription: Markdown Document
+            UTTypeConformsTo:
+              - public.plain-text
+            UTTypeTagSpecification:
+              public.filename-extension:
+                - md
+                - markdown
+                - mdown
+                - mdwn
+                - mkd
+                - mkdn
+              public.mime-type:
+                - text/markdown
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: Markdown Document
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Alternate
+            LSItemContentTypes:
+              - net.daringfireball.markdown
+              - public.plain-text
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.vincent.MarkdownViewer
+        PRODUCT_NAME: MarkdownViewer
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        COMBINE_HIDPI_IMAGES: YES

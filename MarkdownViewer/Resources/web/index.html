@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Markdown Preview</title>
+    <link rel="stylesheet" href="vendor/github-markdown.css">
+    <link rel="stylesheet" href="vendor/highlight-github.min.css" id="hljs-light">
+    <link rel="stylesheet" href="vendor/highlight-github-dark.min.css" id="hljs-dark" disabled>
+    <link rel="stylesheet" href="vendor/katex.min.css">
+    <style>
+        :root { color-scheme: light dark; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+        }
+        body {
+            padding: 32px clamp(20px, 6vw, 64px);
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+        }
+        .markdown-body {
+            max-width: 880px;
+            margin: 0 auto;
+            background: transparent;
+            box-sizing: border-box;
+        }
+        body[data-theme="dark"] .markdown-body {
+            color-scheme: dark;
+        }
+        .mermaid {
+            text-align: center;
+            margin: 1em 0;
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <article id="content" class="markdown-body"></article>
+    <script src="vendor/dompurify.min.js"></script>
+    <script src="vendor/markdown-it.min.js"></script>
+    <script src="vendor/markdown-it-task-lists.min.js"></script>
+    <script src="vendor/highlight.min.js"></script>
+    <script src="vendor/katex.min.js"></script>
+    <script src="vendor/katex-auto-render.min.js"></script>
+    <script src="vendor/mermaid.min.js"></script>
+    <script src="render.js"></script>
+</body>
+</html>
