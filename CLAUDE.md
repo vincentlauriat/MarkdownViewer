@@ -27,11 +27,10 @@ Vincent veut que ces fichiers restent toujours synchronisés sans avoir à le de
 ## Convention de langue
 - Communication avec Vincent : **français** (avec accents complets)
 - Identifiants de code, commits, code Swift : **anglais**
-- Fichiers de doc : **français**
+- Fichiers de doc : **anglais**
 
 ## Convention de commits
 Pas encore initialisé en repo git. Quand ce sera le cas :
-- Suffixe `Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>` à chaque commit
 - Messages courts en anglais, présent ("add", "fix", "update")
 
 ## Périmètre actuel
