@@ -24,7 +24,7 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 - [x] Print / Export PDF : `Cmd+P` via `WKWebView.printOperation` natif (le bouton "Save as PDF" du dialog macOS gère l'export)
 
 ### Polish v1
-- [ ] App icon (placeholder OK pour début)
+- [x] App icon — "M↓" indigo squircle, généré par `Scripts/make-icon.swift` (10 tailles + Contents.json)
 - [ ] Test sur fichiers de stress : README de gros repos, fichier de 1 Mo, doc avec 100 images
 - [ ] Vérifier signing minimal (Developer ID ou self-signed pour usage perso)
 - [x] Test runtime : ouvrir sample.md, vérifier rendu (math, code highlight, mermaid, dark mode) — validé visuellement « c'est super propre »
