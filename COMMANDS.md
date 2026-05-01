@@ -28,3 +28,8 @@ Toutes les consignes envoyées par Vincent dans le cadre du projet, en ordre chr
 > c'est super propre, on continue
 
 (validation visuelle du rendu, on enchaîne sur Phase 4 — live reload)
+
+### #8
+> oui on continue et oui pour un repo sur github mais il faut que tu me genere un super README.md en anglais
+
+(Phase 5 — Find + Print + repo GitHub public + README anglais)

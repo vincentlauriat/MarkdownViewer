@@ -20,8 +20,8 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
   - Debounce 120 ms, gestion atomic save (rename → re-bind sur nouveau fd)
   - Latence mesurée : 130 ms entre modif disque et re-rendu
 - [x] Recent files : géré par `DocumentGroup` (à vérifier au runtime)
-- [ ] Find in document : `Cmd+F` via `WKWebView.find` ou JS injection
-- [ ] Print / Export PDF : `Cmd+P` via `WKWebView.printOperation`
+- [x] Find in document : `Cmd+F` ouvre une `FindBar` SwiftUI flottante, `Cmd+G` / `Cmd+Shift+G` pour next/prev, Esc pour fermer — utilise `WKWebView.find(_:configuration:)` natif
+- [x] Print / Export PDF : `Cmd+P` via `WKWebView.printOperation` natif (le bouton "Save as PDF" du dialog macOS gère l'export)
 
 ### Polish v1
 - [ ] App icon (placeholder OK pour début)
@@ -55,4 +55,6 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 - [ ] Drag & drop de `.md` sur l'icône Dock (gratuit avec DocumentGroup, à vérifier)
 - [ ] Distribution App Store (signing + sandbox + review process)
 - [ ] Migrer highlight.js → Shiki si la qualité de coloration devient un problème
-- [ ] Init repo git + premier commit
+- [x] Init repo git + premier commit + repo public GitHub : https://github.com/vincentlauriat/MarkdownViewer
+- [x] README anglais top qualité (badges, archi diagram, tech stack, roadmap, contributing)
+- [x] LICENSE MIT

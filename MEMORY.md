@@ -1,7 +1,7 @@
 ---
 name: MarkdownViewer — Mémoire projet
 description: Synthèse vivante du projet, mise à jour automatiquement à chaque évolution
-last_updated: 2026-05-01T12:35
+last_updated: 2026-05-01T13:10
 ---
 
 # MarkdownViewer — Mémoire projet
@@ -41,11 +41,13 @@ Application macOS native pour visualiser rapidement un fichier `.md` au double-c
 - Plus tard : sélecteur de thèmes, table of contents flottante, zoom Cmd+/-, Quick Look extension
 
 ## État courant
-- **Phase** : Phases 0-4 du PLAN.md terminées (scaffolding + file association + WKWebView + rendu complet + live reload)
+- **Phase** : Phases 0-5 du PLAN.md terminées — MVP fonctionnel
+- **Repo** : https://github.com/vincentlauriat/MarkdownViewer (public, MIT, README anglais)
 - **Build** : ✅ `xcodebuild` Debug réussit, app à `build/Build/Products/Debug/MarkdownViewer.app`
 - **LaunchServices** : app enregistrée automatiquement (file association `.md` active)
-- **Live reload** : opérationnel, validé sur 2 scénarios (write inline + atomic save), latence ~130 ms
-- **Prochaine étape** : Phase 5 (Find Cmd+F, Print/Export PDF Cmd+P), puis polish v1 (icon, signing, handler par défaut)
+- **Live reload** : opérationnel, latence ~130 ms (write + atomic save)
+- **Find / Print** : implémentés (`Cmd+F`, `Cmd+G`, `Cmd+Shift+G`, `Cmd+P`, `Cmd+R`), validation visuelle Vincent en attente
+- **Prochaines étapes** : polish v1 (app icon, définir handler par défaut, signing Developer ID éventuel) puis attaque v2 (édition)
 
 ## Quick start
 ```bash

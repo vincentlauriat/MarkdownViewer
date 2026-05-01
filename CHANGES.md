@@ -69,6 +69,52 @@ Format : entrée par session avec date, regroupée par type (`Added` / `Changed`
   - 1 event `.delete` (raw=1, needsRebind=true) → ré-attachement du watcher sur nouveau fd → reload → 126 ms ✅
 - Pas besoin de migrer vers `ReferenceFileDocument` : `representedURL` est posée par DocumentGroup automatiquement
 
+---
+
+## Phase 5 — Find / Print + GitHub release (terminée)
+
+### Added
+- `MarkdownViewer/Sources/FindBar.swift` : SwiftUI floating find bar
+  - NSSearchField-like (champ + boutons up/down + close)
+  - Style `.thinMaterial` avec radius 10, ombre légère, transition slide-in/out
+  - `@FocusState` auto-focus à l'ouverture, Esc pour fermer
+  - Recherche live au typing + Enter pour next
+- `MarkdownViewer/Sources/ContentView.swift` : `ZStack` overlay avec `FindBar` aligné top-trailing
+- `MarkdownViewer/Sources/MarkdownViewerApp.swift` : 5 nouvelles commandes menu :
+  - `Cmd+P` Print (replacing `.printItem`)
+  - `Cmd+F` Find (replacing `.textEditing`)
+  - `Cmd+G` / `Cmd+Shift+G` Find Next/Previous
+  - `Cmd+R` Reload (déjà existant)
+- `WebView.Coordinator` : 5 nouveaux observers via helper `observe(_:action:)` :
+  - `.printActiveDocument` → `webView.printOperation(with: NSPrintInfo.shared).runModal(...)`
+  - `.findRequest(query, forward)` → `webView.find(_:configuration:)` natif macOS 12+
+  - `.findNext` / `.findPrevious` → reuse de `lastFindQuery`
+  - Filtrage `isActiveWebView()` (via `window.isKeyWindow`) pour ne pas déclencher dans les fenêtres inactives
+
+### Changed
+- Helper `observe(_:action:)` typé `@MainActor @Sendable (Notification) -> Void` pour passer la stricte concurrence Swift 6
+- `Coordinator` : remplacement de l'unique `reloadObserver` par un tableau `observers: [NSObjectProtocol]` (cleanup unifié dans `deinit`)
+
+### Added (project files)
+- `LICENSE` : MIT
+- `README.md` : refonte complète en anglais — badges, hero, features table, quick start, set as default, architecture diagram ASCII, tech stack table, project layout, dev commands, roadmap, contributing, license
+
+### Decisions
+- API native `WKWebView.find(_:configuration:)` (macOS 12+) plutôt que `window.find()` JS ou `NSTextFinder` — plus simple, gère wrap automatiquement
+- Pas de compteur "X of Y matches" en MVP (l'API native ne le retourne pas, demanderait du JS injection en plus)
+- `keyboardShortcut(.escape)` sur le bouton close de `FindBar` plutôt qu'une logique custom
+- Floating bar SwiftUI plutôt qu'NSPanel séparée — reste dans la window du document, suit son focus
+
+### Verified
+- Build OK après 2 fix Swift 6 concurrency (`@MainActor` sur le helper `observe`, downgrade `onChange(of:initial:_:)` macOS 14+ → `onChange(of:)` macOS 13)
+- Runtime : file watcher s'arme correctement sur sample.md, logs `os.Logger` capturés
+- Find / Print non-testables sans GUI access — validation visuelle déléguée à Vincent
+
+### Released
+- Repo public : https://github.com/vincentlauriat/MarkdownViewer
+- Premier commit "feat: initial release of MarkdownViewer v0.1.0"
+- Branch `main` avec upstream tracking
+
 ### Docs
 - Création de la documentation initiale du projet :
   - `MEMORY.md` — synthèse vivante du projet
