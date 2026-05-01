@@ -29,7 +29,8 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 - [ ] Vérifier signing minimal (Developer ID ou self-signed pour usage perso)
 - [x] Test runtime : ouvrir sample.md, vérifier rendu (math, code highlight, mermaid, dark mode) — validé visuellement « c'est super propre »
 - [x] NSLog → `os.Logger` avec subsystem `com.vincent.MarkdownViewer` (observabilité fiable via `log show`)
-- [ ] Définir l'app comme handler par défaut `.md` dans Finder
+- [x] Build Release + install dans `/Applications/MarkdownViewer.app` (4,4 Mo)
+- [x] Définir l'app comme handler par défaut `.md` dans Finder via `duti` (couvre aussi `markdown`, `mdown`, `mdwn`, `mkd`, `mkdn`, `public.plain-text`)
 
 ## v2 — Édition
 
