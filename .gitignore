@@ -24,3 +24,8 @@ Package.resolved
 
 # Logs
 *.log
+
+#Perso
+COMMANDS.md
+CHANGES.md
+MEMORY.md
