@@ -76,11 +76,15 @@
 
 ```
 MarkdownViewer/Sources/
-├── MarkdownViewerApp.swift   — @main, DocumentGroup, menu commands
-├── MarkdownDocument.swift    — FileDocument + UTType.markdown
-├── ContentView.swift         — WebView + FindBar overlay
+├── MarkdownViewerApp.swift   — @main, DocumentGroup(newDocument:), menu commands
+├── MarkdownDocument.swift    — FileDocument + UTType.markdown (read+write)
+├── ContentView.swift         — Toolbar Picker + ZStack(content, FindBar)
+│                               switches Preview / Split / Source via @SceneStorage
+├── ViewMode.swift            — enum Preview / Split / Source + cycle helper
 ├── WebView.swift             — NSViewRepresentable around WKWebView
 │                               (Coordinator owns FileWatcher + observers)
+├── MarkdownEditor.swift      — NSTextView wrapper with NSTextStorage syntax
+│                               highlighting (regex-based) + native undo/redo
 ├── FindBar.swift             — SwiftUI floating find bar (NSSearchField-like)
 └── FileWatcher.swift         — DispatchSource-based live reload
 
@@ -118,6 +122,16 @@ MarkdownViewer/Resources/
 2. Typing posts `.findRequest(query, forward: true)` on every keystroke
 3. `Cmd+G` / `Cmd+Shift+G` post `.findNext` / `.findPrevious` (re-uses the last query)
 4. Coordinator filters by `webView.window?.isKeyWindow` so inactive windows stay quiet, then calls `WKWebView.find(_:configuration:)` (native, macOS 12+)
+
+### Editor mode (v0.2)
+1. `DocumentGroup(newDocument: MarkdownDocument())` enables full editing — `Cmd+S`, dirty indicator (dot in close button), and auto-save on window resign-key are inherited from `NSDocument` plumbing
+2. `ContentView` exposes a 3-way `Picker` (Preview / Split / Source) bound to `@SceneStorage("viewMode")` so the choice persists per window
+3. **Source** mode mounts `MarkdownEditor` (NSTextView wrapper) bound to `$document.text`; edits propagate via the SwiftUI binding
+4. **Split** mode wraps both panes in `HSplitView` — the divider is draggable, each pane has `minWidth: 240`
+5. **Preview** mode keeps the original `WebView` — typing in the editor re-renders the preview in the next SwiftUI pass
+6. Syntax highlighting in the editor is implemented via `NSTextStorage` attribute spans, recomputed on every `textDidChange` via a small set of regex (headings, bold, italic, inline code, fenced code, links, blockquotes, list markers)
+7. Native undo/redo comes for free with `NSTextView.allowsUndo = true`
+8. `Cmd+/` posts `.toggleViewMode` which cycles Preview → Split → Source → Preview
 
 ### Print / Export PDF
 1. `Cmd+P` (menu command) posts `.printActiveDocument`

@@ -32,14 +32,15 @@ Legend: `[ ]` to do · `[~]` in progress · `[x]` done · `[-]` cancelled
 - [x] Install in `/Applications/MarkdownViewer.app` (Release build, ad-hoc signed)
 - [x] Set as default `.md` handler via `duti` (also `markdown`, `mdown`, `mdwn`, `mkd`, `mkdn`, `public.plain-text`)
 
-## v2 — Editing
+## v2 — Editing (shipped 2026-05-02, commit `7f77874`)
 
-- [ ] Toggle Preview / Code (segmented control in toolbar, suggested shortcut `Cmd+/`)
-- [ ] Split mode (preview + source side by side) — optional
-- [ ] Native text editor (`TextEditor` SwiftUI) with basic Markdown syntax highlighting
-- [ ] Save through `FileDocument` (auto-save on window resign-key + `Cmd+S`)
-- [ ] "Modified" indicator (dot in the close button — standard `NSDocument` behaviour)
-- [ ] Native Undo / Redo via `UndoManager`
+- [x] Toggle Preview / Source via segmented Picker in toolbar (`Cmd+/` cycles Preview → Split → Source)
+- [x] Split mode (preview + source side by side) via `HSplitView` (draggable divider)
+- [x] Native `MarkdownEditor` (NSTextView wrapper) with basic Markdown syntax highlighting through regex over `NSTextStorage` (headings, bold, italic, inline code, code blocks, links, blockquotes, list markers)
+- [x] Save through `FileDocument` (native `Cmd+S` + auto-save on window resign-key, handled by DocumentGroup)
+- [x] "Modified" indicator in the title bar (dot in the close button — standard `NSDocument` behaviour)
+- [x] Native Undo / Redo via `NSTextView.allowsUndo = true`
+- [x] CFBundleTypeRole: Viewer → Editor
 
 ## v3 — Multi-platform
 
