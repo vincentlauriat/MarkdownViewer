@@ -48,6 +48,10 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 - [ ] Cible iOS — adapter UI compacte (toggle plutôt que split)
 - [ ] Tester compatibilité Files.app + iCloud Drive
 
+## v0.2.x — Polish
+
+- [x] Détection + toggle du YAML frontmatter (Obsidian / Tolaria / Jekyll) — bouton 🏷️ dans la toolbar, raccourci `⇧⌘Y`, persisté via `@SceneStorage`, désactivé si pas de frontmatter
+
 ## Backlog (post-v3)
 
 - [ ] Quick Look extension (preview Markdown dans Finder avec barre d'espace)

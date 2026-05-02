@@ -48,6 +48,10 @@ Legend: `[ ]` to do · `[~]` in progress · `[x]` done · `[-]` cancelled
 - [ ] iOS target — adapt to compact width classes (toggle instead of split)
 - [ ] Test compatibility with Files.app + iCloud Drive
 
+## v0.2.x — Polish
+
+- [x] YAML frontmatter detection + toggle (Obsidian / Tolaria / Jekyll) — 🏷️ toolbar button, `⇧⌘Y` shortcut, persisted via `@SceneStorage`, disabled when no frontmatter is present
+
 ## Backlog (post-v3)
 
 - [ ] Quick Look extension (preview Markdown in Finder with the spacebar)
