@@ -57,6 +57,19 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 
 - [x] Détection + toggle du YAML frontmatter (Obsidian / Tolaria / Jekyll) — bouton 🏷️ dans la toolbar, raccourci `⇧⌘Y`, persisté via `@SceneStorage`, désactivé si pas de frontmatter
 
+## v4 — Auto-update (macOS, depuis GitHub Releases)
+
+- [x] **Choix mécanisme** : version maison (URLSession + GitHub Releases API), Sparkle reporté à plus tard si le projet grandit
+- [ ] `Sources/UpdateChecker.swift` (macOS-only via `#if os(macOS)`) : fetch `https://api.github.com/repos/vincentlauriat/MarkdownViewer/releases/latest`, compare `tag_name` vs `CFBundleShortVersionString`, prompt NSAlert "Download" / "Later" si maj dispo
+- [ ] Comparaison semver **numérique** (split sur `.` puis compare entiers) — pas la compare lexicographique de String, sinon "1.10" < "1.9"
+- [ ] Auto-check au lancement avec debounce 7 jours via `UserDefaults` (`lastUpdateCheck`)
+- [ ] Menu "Check for Updates…" après `.appInfo` (CommandGroup) — déclenche le même check en mode "non-silent" (montre "you're up to date" si rien)
+- [ ] Bump `MARKETING_VERSION` macOS de `0.1.0` → `0.3.0` dans `project.yml` (alignement avec iOS, sinon premier check trigger une fausse maj)
+- [ ] Pipeline release : `gh release create v0.X.Y ./MarkdownViewer.dmg --notes-file release-notes.md` après build Release + zip/dmg du bundle
+- [ ] Premier release `v0.3.0` à publier sur GitHub pour que le checker ait quelque chose à comparer (sinon API renvoie 404)
+- [ ] **Migration future vers Sparkle** : remplacer UpdateChecker, ajouter Sparkle SwiftPM, générer paire EdDSA, configurer `SUFeedURL` + `SUPublicEDKey` dans Info.plist, pipeline release avec `generate_appcast` + notarization Apple Developer ID — **différé**
+- [ ] **iOS / iPadOS** : pas applicable hors App Store / TestFlight — feature macOS uniquement
+
 ## Backlog (post-v3)
 
 - [ ] Quick Look extension (preview Markdown dans Finder avec barre d'espace)

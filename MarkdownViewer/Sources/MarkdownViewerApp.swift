@@ -2,6 +2,12 @@ import SwiftUI
 
 @main
 struct MarkdownViewerApp: App {
+    init() {
+        #if os(macOS)
+        UpdateChecker.checkOnLaunchIfNeeded()
+        #endif
+    }
+
     var body: some Scene {
         DocumentGroup(newDocument: MarkdownDocument()) { file in
             ContentView(document: file.$document)
@@ -28,6 +34,12 @@ struct MarkdownViewerApp: App {
                 Button("Find Previous") { post(.findPrevious) }
                     .keyboardShortcut("g", modifiers: [.command, .shift])
             }
+
+            #if os(macOS)
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates…") { UpdateChecker.checkFromMenu() }
+            }
+            #endif
         }
     }
 
