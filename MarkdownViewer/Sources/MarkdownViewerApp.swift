@@ -3,15 +3,16 @@ import SwiftUI
 @main
 struct MarkdownViewerApp: App {
     var body: some Scene {
-        DocumentGroup(viewing: MarkdownDocument.self) { file in
-            ContentView(document: file.document)
+        DocumentGroup(newDocument: MarkdownDocument()) { file in
+            ContentView(document: file.$document)
         }
         .commands {
-            CommandGroup(replacing: .newItem) {}
-
             CommandGroup(after: .toolbar) {
-                Button("Reload") { post(.reloadActiveDocument) }
+                Button("Reload from Disk") { post(.reloadActiveDocument) }
                     .keyboardShortcut("r", modifiers: .command)
+                Divider()
+                Button("Toggle View Mode") { post(.toggleViewMode) }
+                    .keyboardShortcut("/", modifiers: .command)
             }
 
             CommandGroup(replacing: .printItem) {
@@ -42,4 +43,5 @@ extension Notification.Name {
     static let findRequest = Notification.Name("MarkdownViewer.findRequest")
     static let findNext = Notification.Name("MarkdownViewer.findNext")
     static let findPrevious = Notification.Name("MarkdownViewer.findPrevious")
+    static let toggleViewMode = Notification.Name("MarkdownViewer.toggleViewMode")
 }

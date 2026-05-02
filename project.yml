@@ -59,8 +59,9 @@ targets:
                 - text/markdown
         CFBundleDocumentTypes:
           - CFBundleTypeName: Markdown Document
-            CFBundleTypeRole: Viewer
+            CFBundleTypeRole: Editor
             LSHandlerRank: Alternate
+            NSDocumentClass: NSDocument
             LSItemContentTypes:
               - net.daringfireball.markdown
               - public.plain-text

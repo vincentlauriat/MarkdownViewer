@@ -1,17 +1,18 @@
 import SwiftUI
 
 struct ContentView: View {
-    let document: MarkdownDocument
+    @Binding var document: MarkdownDocument
+    @SceneStorage("viewMode") private var viewMode: ViewMode = .preview
     @State private var findQuery: String = ""
     @State private var showFind: Bool = false
 
     var body: some View {
         ZStack(alignment: .top) {
-            WebView(markdown: document.text)
-                .frame(minWidth: 640, minHeight: 480)
+            content
+                .frame(minWidth: 720, minHeight: 480)
                 .background(Color(nsColor: .textBackgroundColor))
 
-            if showFind {
+            if showFind && viewMode != .code {
                 FindBar(
                     query: $findQuery,
                     onClose: {
@@ -28,12 +29,40 @@ struct ContentView: View {
             }
         }
         .animation(.easeInOut(duration: 0.15), value: showFind)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Picker("View Mode", selection: $viewMode) {
+                    ForEach(ViewMode.allCases) { mode in
+                        Image(systemName: mode.systemImage)
+                            .help(mode.label)
+                            .tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 150)
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .toggleFindBar)) { _ in
-            if showFind {
-                showFind = false
-                findQuery = ""
-            } else {
-                showFind = true
+            if showFind { showFind = false; findQuery = "" } else { showFind = true }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .toggleViewMode)) { _ in
+            viewMode = viewMode.cycled()
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch viewMode {
+        case .preview:
+            WebView(markdown: document.text)
+        case .code:
+            MarkdownEditor(text: $document.text)
+        case .split:
+            HSplitView {
+                MarkdownEditor(text: $document.text)
+                    .frame(minWidth: 240)
+                WebView(markdown: document.text)
+                    .frame(minWidth: 240)
             }
         }
     }
