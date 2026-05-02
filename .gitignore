@@ -26,6 +26,10 @@ Package.resolved
 # Logs
 *.log
 
+# Release artifacts
+*.dmg
+release-notes-*.md
+
 #Perso
 COMMANDS.md
 CHANGES.md

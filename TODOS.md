@@ -65,8 +65,8 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 - [ ] Auto-check au lancement avec debounce 7 jours via `UserDefaults` (`lastUpdateCheck`)
 - [ ] Menu "Check for Updates…" après `.appInfo` (CommandGroup) — déclenche le même check en mode "non-silent" (montre "you're up to date" si rien)
 - [ ] Bump `MARKETING_VERSION` macOS de `0.1.0` → `0.3.0` dans `project.yml` (alignement avec iOS, sinon premier check trigger une fausse maj)
-- [ ] Pipeline release : `gh release create v0.X.Y ./MarkdownViewer.dmg --notes-file release-notes.md` après build Release + zip/dmg du bundle
-- [ ] Premier release `v0.3.0` à publier sur GitHub pour que le checker ait quelque chose à comparer (sinon API renvoie 404)
+- [x] Pipeline release : **`Scripts/release.sh <version>`** (build Release + ad-hoc codesign via staging dir avec `ditto --noextattr` pour contourner le `com.apple.provenance` xattr de macOS Sequoia + DMG via `hdiutil`). Imprime la commande `gh release create` à exécuter ensuite.
+- [x] **Premier release `v0.3.0` publié** sur GitHub : https://github.com/vincentlauriat/MarkdownViewer/releases/tag/v0.3.0 (DMG 2,49 Mo, ad-hoc signé). API `releases/latest` renvoie bien la release.
 - [ ] **Migration future vers Sparkle** : remplacer UpdateChecker, ajouter Sparkle SwiftPM, générer paire EdDSA, configurer `SUFeedURL` + `SUPublicEDKey` dans Info.plist, pipeline release avec `generate_appcast` + notarization Apple Developer ID — **différé**
 - [ ] **iOS / iPadOS** : pas applicable hors App Store / TestFlight — feature macOS uniquement
 
