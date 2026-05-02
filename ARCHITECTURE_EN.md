@@ -133,6 +133,14 @@ MarkdownViewer/Resources/
 7. Native undo/redo comes for free with `NSTextView.allowsUndo = true`
 8. `Cmd+/` posts `.toggleViewMode` which cycles Preview → Split → Source → Preview
 
+### YAML frontmatter toggle (v0.2.x)
+1. `render.js` runs `extractFrontmatter(text)` against `^---\n…\n---\n` at the start of the source. The captured YAML is rendered in a styled `<aside class="frontmatter">` above the main content; the body is parsed by markdown-it as usual.
+2. `body.hide-frontmatter` (CSS) hides the aside without removing it from the DOM. `window.setFrontmatterVisible(bool)` toggles the class.
+3. `ContentView` exposes a toolbar `Button` (`tag` / `tag.fill`, shortcut `⇧⌘Y`) bound to `@SceneStorage("showFrontmatter")` (default: `false` — hidden, à la Obsidian)
+4. The button is `.disabled(!hasFrontmatter)` — Swift parses the first lines for `---` … `---` so the UI stays accurate without a JS round-trip
+5. The visibility state is re-applied on every `flush()` from `WebView.Coordinator`, so live-reloading the file does not reset the toggle
+6. `highlight.js` is invoked explicitly on the YAML `<code class="language-yaml">` block (markdown-it's `highlight` callback only fires on Markdown-parsed code fences, not on HTML we inject ourselves)
+
 ### Print / Export PDF
 1. `Cmd+P` (menu command) posts `.printActiveDocument`
 2. Coordinator builds an `NSPrintInfo`, asks `webView.printOperation(with:)` for an `NSPrintOperation`, runs it modally against the active window
