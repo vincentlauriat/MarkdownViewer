@@ -10,7 +10,6 @@ struct ContentView: View {
     private var hasFrontmatter: Bool {
         let trimmed = document.text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.hasPrefix("---") else { return false }
-        // Cherche le délimiteur fermant `---` sur sa propre ligne
         let lines = document.text.components(separatedBy: "\n")
         guard lines.first?.trimmingCharacters(in: .whitespaces) == "---" else { return false }
         for line in lines.dropFirst() {
@@ -19,11 +18,21 @@ struct ContentView: View {
         return false
     }
 
+    /// Sur iPhone le mode Split n'a pas de sens (largeur insuffisante) — on le filtre.
+    private var availableModes: [ViewMode] {
+        #if os(iOS)
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            return ViewMode.allCases.filter { $0 != .split }
+        }
+        #endif
+        return ViewMode.allCases
+    }
+
     var body: some View {
         ZStack(alignment: .top) {
             content
-                .frame(minWidth: 720, minHeight: 480)
-                .background(Color(nsColor: .textBackgroundColor))
+                .frame(minWidth: 320, minHeight: 320)
+                .background(backgroundColor)
 
             if showFind && viewMode != .code {
                 FindBar(
@@ -42,36 +51,21 @@ struct ContentView: View {
             }
         }
         .animation(.easeInOut(duration: 0.15), value: showFind)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Picker("View Mode", selection: $viewMode) {
-                    ForEach(ViewMode.allCases) { mode in
-                        Image(systemName: mode.systemImage)
-                            .help(mode.label)
-                            .tag(mode)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .frame(width: 150)
-            }
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    showFrontmatter.toggle()
-                } label: {
-                    Image(systemName: showFrontmatter ? "tag.fill" : "tag")
-                }
-                .help(showFrontmatter ? "Hide YAML frontmatter" : "Show YAML frontmatter")
-                .disabled(!hasFrontmatter)
-                .keyboardShortcut("y", modifiers: [.command, .shift])
-            }
+        .toolbar { toolbarContent }
+        .onAppear {
+            // S'assure qu'un mode invalide pour la plateforme retombe sur Preview
+            if !availableModes.contains(viewMode) { viewMode = .preview }
+            broadcastFrontmatter()
         }
-        .onAppear { broadcastFrontmatter() }
         .onChange(of: showFrontmatter) { _ in broadcastFrontmatter() }
         .onReceive(NotificationCenter.default.publisher(for: .toggleFindBar)) { _ in
             if showFind { showFind = false; findQuery = "" } else { showFind = true }
         }
         .onReceive(NotificationCenter.default.publisher(for: .toggleViewMode)) { _ in
-            viewMode = viewMode.cycled()
+            // Cycle uniquement parmi les modes disponibles pour la plateforme
+            let modes = availableModes
+            guard let i = modes.firstIndex(of: viewMode) else { viewMode = modes[0]; return }
+            viewMode = modes[(i + 1) % modes.count]
         }
     }
 
@@ -83,13 +77,55 @@ struct ContentView: View {
         case .code:
             MarkdownEditor(text: $document.text)
         case .split:
+            #if os(macOS)
             HSplitView {
                 MarkdownEditor(text: $document.text)
                     .frame(minWidth: 240)
                 WebView(markdown: document.text)
                     .frame(minWidth: 240)
             }
+            #else
+            // Fallback iPad (HSplitView est macOS-only) : HStack équilibré avec un divider visuel
+            HStack(spacing: 0) {
+                MarkdownEditor(text: $document.text)
+                Divider()
+                WebView(markdown: document.text)
+            }
+            #endif
         }
+    }
+
+    @ToolbarContentBuilder
+    private var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .principal) {
+            Picker("View Mode", selection: $viewMode) {
+                ForEach(availableModes) { mode in
+                    Image(systemName: mode.systemImage)
+                        .help(mode.label)
+                        .tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+            .frame(width: CGFloat(availableModes.count) * 50)
+        }
+        ToolbarItem(placement: .primaryAction) {
+            Button {
+                showFrontmatter.toggle()
+            } label: {
+                Image(systemName: showFrontmatter ? "tag.fill" : "tag")
+            }
+            .help(showFrontmatter ? "Hide YAML frontmatter" : "Show YAML frontmatter")
+            .disabled(!hasFrontmatter)
+            .keyboardShortcut("y", modifiers: [.command, .shift])
+        }
+    }
+
+    private var backgroundColor: Color {
+        #if os(macOS)
+        Color(nsColor: .textBackgroundColor)
+        #else
+        Color(uiColor: .systemBackground)
+        #endif
     }
 
     private func post(_ name: Notification.Name, userInfo: [AnyHashable: Any]? = nil) {

@@ -3,6 +3,7 @@ options:
   bundleIdPrefix: com.vincent
   deploymentTarget:
     macOS: "13.0"
+    iOS: "16.0"
   createIntermediateGroups: true
   generateEmptyDirectories: true
   groupSortPosition: top
@@ -18,6 +19,7 @@ settings:
     ENABLE_USER_SCRIPT_SANDBOXING: NO
     SWIFT_STRICT_CONCURRENCY: minimal
     MACOSX_DEPLOYMENT_TARGET: "13.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
 
 targets:
   MarkdownViewer:
@@ -86,3 +88,66 @@ targets:
           iconutil -c icns "$ICONSET" -o "${TARGET_BUILD_DIR}/${WRAPPER_NAME}/Contents/Resources/AppIcon.icns"
           echo "AppIcon.icns rebuilt with full size set ($(/bin/ls -la ${TARGET_BUILD_DIR}/${WRAPPER_NAME}/Contents/Resources/AppIcon.icns | awk '{print $5}') bytes)"
         basedOnDependencyAnalysis: false
+
+  MarkdownViewerIOS:
+    type: application
+    platform: iOS
+    sources:
+      - path: MarkdownViewer/Sources
+      - path: MarkdownViewer/Resources/web
+        type: folder
+        buildPhase: resources
+      - path: MarkdownViewer/Resources/Assets.xcassets
+        buildPhase: resources
+    info:
+      path: MarkdownViewer/Info-iOS.plist
+      properties:
+        CFBundleDisplayName: MarkdownViewer
+        CFBundleShortVersionString: "0.3.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+        UISupportsDocumentBrowser: true
+        UTImportedTypeDeclarations:
+          - UTTypeIdentifier: net.daringfireball.markdown
+            UTTypeDescription: Markdown Document
+            UTTypeConformsTo:
+              - public.plain-text
+            UTTypeTagSpecification:
+              public.filename-extension:
+                - md
+                - markdown
+                - mdown
+                - mdwn
+                - mkd
+                - mkdn
+              public.mime-type:
+                - text/markdown
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: Markdown Document
+            CFBundleTypeRole: Editor
+            LSHandlerRank: Alternate
+            LSItemContentTypes:
+              - net.daringfireball.markdown
+              - public.plain-text
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.vincent.MarkdownViewer
+        PRODUCT_NAME: MarkdownViewer
+        MARKETING_VERSION: "0.3.0"
+        CURRENT_PROJECT_VERSION: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        TARGETED_DEVICE_FAMILY: "1,2"   # iPhone + iPad
+        SUPPORTS_MACCATALYST: NO
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO

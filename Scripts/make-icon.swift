@@ -120,12 +120,20 @@ func write(data: Data, to path: String) {
 }
 
 // Tailles requises par macOS AppIcon (idiom mac)
-let icons: [(size: Int, scale: Int, render: Int)] = [
+let macIcons: [(size: Int, scale: Int, render: Int)] = [
     (16, 1, 16), (16, 2, 32),
     (32, 1, 32), (32, 2, 64),
     (128, 1, 128), (128, 2, 256),
     (256, 1, 256), (256, 2, 512),
     (512, 1, 512), (512, 2, 1024)
+]
+
+// Tailles requises par iOS / iPadOS AppIcon (idiom universal)
+// Format moderne (Xcode 14+) : un seul "iOS Marketing" 1024 1x universal
+// + le runtime synthétise les tailles en interne. On garde aussi les classiques
+// pour compatibilité avec les anciennes versions d'iOS et la fiabilité.
+let iosIcons: [(size: String, scale: Int, render: Int, idiom: String)] = [
+    ("1024x1024", 1, 1024, "universal")
 ]
 
 let args = CommandLine.arguments
@@ -150,26 +158,40 @@ case "all":
     }
     let outDir = args[2]
     try? FileManager.default.createDirectory(atPath: outDir, withIntermediateDirectories: true)
-    var manifest: [(name: String, idiomSize: Int, scale: Int)] = []
-    for (idiomSize, scale, renderSize) in icons {
+
+    var images: [[String: String]] = []
+
+    for (idiomSize, scale, renderSize) in macIcons {
         let suffix = scale == 1 ? "" : "@\(scale)x"
         let name = "icon_\(idiomSize)x\(idiomSize)\(suffix).png"
         guard let data = renderIcon(size: renderSize, style: .indigo) else { continue }
         write(data: data, to: "\(outDir)/\(name)")
-        manifest.append((name, idiomSize, scale))
+        images.append([
+            "filename": name,
+            "idiom": "mac",
+            "scale": "\(scale)x",
+            "size": "\(idiomSize)x\(idiomSize)"
+        ])
         print("✓ \(name)  (\(renderSize)x\(renderSize))")
     }
 
-    // Génère un Contents.json compatible Asset Catalog
-    var images: [[String: String]] = []
-    for entry in manifest {
+    for (size, scale, renderSize, idiom) in iosIcons {
+        let suffix = scale == 1 ? "" : "@\(scale)x"
+        let cleanSize = size.replacingOccurrences(of: "x", with: "_")
+        let name = "icon_ios_\(cleanSize)\(suffix).png"
+        guard let data = renderIcon(size: renderSize, style: .indigo) else { continue }
+        write(data: data, to: "\(outDir)/\(name)")
         images.append([
-            "filename": entry.name,
-            "idiom": "mac",
-            "scale": "\(entry.scale)x",
-            "size": "\(entry.idiomSize)x\(entry.idiomSize)"
+            "filename": name,
+            "idiom": idiom,
+            "platform": "ios",
+            "scale": "\(scale)x",
+            "size": size
         ])
+        print("✓ \(name)  (\(renderSize)x\(renderSize), iOS)")
     }
+
+    // Génère un Contents.json compatible Asset Catalog
     let json: [String: Any] = [
         "images": images,
         "info": ["author": "xcode", "version": 1]
@@ -178,7 +200,7 @@ case "all":
         withJSONObject: json, options: [.prettyPrinted, .sortedKeys]
     ) {
         write(data: data, to: "\(outDir)/Contents.json")
-        print("✓ Contents.json")
+        print("✓ Contents.json (\(images.count) images)")
     }
 
 default:

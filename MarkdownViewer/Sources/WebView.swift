@@ -1,25 +1,64 @@
-import AppKit
 import os
 import SwiftUI
 import WebKit
 
+#if os(macOS)
+import AppKit
+#elseif os(iOS)
+import UIKit
+#endif
+
 private let log = Logger(subsystem: "com.vincent.MarkdownViewer", category: "WebView")
 
+#if os(macOS)
 struct WebView: NSViewRepresentable {
     let markdown: String
 
-    func makeCoordinator() -> Coordinator {
-        Coordinator()
-    }
+    func makeCoordinator() -> Coordinator { Coordinator() }
 
     func makeNSView(context: Context) -> WKWebView {
+        configureWebView(context: context)
+    }
+
+    func updateNSView(_ webView: WKWebView, context: Context) {
+        context.coordinator.documentMarkdown = markdown
+        context.coordinator.flush()
+    }
+}
+#elseif os(iOS)
+struct WebView: UIViewRepresentable {
+    let markdown: String
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    func makeUIView(context: Context) -> WKWebView {
+        configureWebView(context: context)
+    }
+
+    func updateUIView(_ webView: WKWebView, context: Context) {
+        context.coordinator.documentMarkdown = markdown
+        context.coordinator.flush()
+    }
+}
+#endif
+
+extension WebView {
+    fileprivate func configureWebView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
+        #if os(macOS)
         config.preferences.setValue(true, forKey: "developerExtrasEnabled")
+        #endif
 
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = context.coordinator
+        #if os(macOS)
         webView.setValue(false, forKey: "drawsBackground")
         webView.allowsBackForwardNavigationGestures = false
+        #else
+        webView.isOpaque = false
+        webView.backgroundColor = .clear
+        webView.scrollView.backgroundColor = .clear
+        #endif
 
         context.coordinator.webView = webView
         context.coordinator.observeAppearance()
@@ -28,38 +67,55 @@ struct WebView: NSViewRepresentable {
         return webView
     }
 
-    func updateNSView(_ webView: WKWebView, context: Context) {
-        context.coordinator.documentMarkdown = markdown
-        context.coordinator.flush()
-    }
-
-    private func loadBundle(into webView: WKWebView) {
+    fileprivate func loadBundle(into webView: WKWebView) {
         guard let resources = Bundle.main.resourceURL else { return }
         let webRoot = resources.appendingPathComponent("web", isDirectory: true)
         let indexURL = webRoot.appendingPathComponent("index.html")
         guard FileManager.default.fileExists(atPath: indexURL.path) else { return }
         webView.loadFileURL(indexURL, allowingReadAccessTo: webRoot)
     }
+}
 
+extension WebView {
     @MainActor
     final class Coordinator: NSObject, WKNavigationDelegate {
         weak var webView: WKWebView?
-        /// Texte transmis par SwiftUI (ouverture initiale + Cmd+R).
         var documentMarkdown: String = ""
-        /// Texte le plus récent (relu depuis le disque par le file watcher).
         private var liveMarkdown: String?
         private var bundleReady = false
-        private var appearanceObservation: NSKeyValueObservation?
+        var lastFrontmatterVisible: Bool = false
         private var observers: [NSObjectProtocol] = []
         private var fileWatcher: FileWatcher?
         private var lastFindQuery: String = ""
+        #if os(macOS)
+        private var appearanceObservation: NSKeyValueObservation?
+        #endif
+
+        // MARK: - Theme
 
         func observeAppearance() {
             applyTheme()
+            #if os(macOS)
             appearanceObservation = NSApp?.observe(\.effectiveAppearance, options: [.new]) { [weak self] _, _ in
                 Task { @MainActor in self?.applyTheme() }
             }
+            #endif
         }
+
+        private func applyTheme() {
+            guard bundleReady, let webView else { return }
+            let isDark: Bool = {
+                #if os(macOS)
+                return NSApp?.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                #elseif os(iOS)
+                return webView.traitCollection.userInterfaceStyle == .dark
+                #endif
+            }()
+            let theme = isDark ? "dark" : "light"
+            webView.evaluateJavaScript("window.setTheme && window.setTheme('\(theme)')", completionHandler: nil)
+        }
+
+        // MARK: - Notifications
 
         func observeReloadCommand() {
             observe(.reloadActiveDocument) { [weak self] _ in self?.reloadFromDisk() }
@@ -79,20 +135,14 @@ struct WebView: NSViewRepresentable {
             }
         }
 
-        var lastFrontmatterVisible: Bool = false
-
-        private func applyFrontmatterVisibility(_ visible: Bool) {
-            lastFrontmatterVisible = visible
-            guard bundleReady, let webView else { return }
-            webView.evaluateJavaScript("window.setFrontmatterVisible && window.setFrontmatterVisible(\(visible ? "true" : "false"))", completionHandler: nil)
-        }
-
         private func observe(_ name: Notification.Name, action: @escaping @MainActor @Sendable (Notification) -> Void) {
             let token = NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { note in
                 Task { @MainActor in action(note) }
             }
             observers.append(token)
         }
+
+        // MARK: - Render
 
         func webView(_ webView: WKWebView, didFinish _: WKNavigation!) {
             bundleReady = true
@@ -114,11 +164,12 @@ struct WebView: NSViewRepresentable {
         // MARK: - Live reload
 
         private func attachFileWatcherIfPossible() {
-            // representedURL n'est pas forcément posée immédiatement après didFinish,
-            // on retente quelques fois (DocumentGroup la pose après l'attachement à la fenêtre).
+            #if os(macOS)
             tryAttach(retriesLeft: 10)
+            #endif
         }
 
+        #if os(macOS)
         private func tryAttach(retriesLeft: Int) {
             guard let webView, fileWatcher == nil else { return }
             if let url = webView.window?.representedURL {
@@ -132,15 +183,15 @@ struct WebView: NSViewRepresentable {
                 log.error("attach: representedURL still nil after retries — live reload disabled for this window")
                 return
             }
-            log.debug("attach: representedURL nil, retries left=\(retriesLeft)")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
                 self?.tryAttach(retriesLeft: retriesLeft - 1)
             }
         }
+        #endif
 
         private func reloadFromDisk() {
+            #if os(macOS)
             guard let url = fileWatcher?.url ?? webView?.window?.representedURL else {
-                // Pas d'URL connue — on retombe sur le contenu fourni par SwiftUI.
                 liveMarkdown = nil
                 flush()
                 return
@@ -153,21 +204,14 @@ struct WebView: NSViewRepresentable {
             } catch {
                 log.error("reload failed for \(url.path, privacy: .public): \(error.localizedDescription, privacy: .public)")
             }
-        }
-
-        // MARK: - Thème
-
-        private func applyTheme() {
-            guard bundleReady, let webView else { return }
-            let isDark = NSApp?.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-            let theme = isDark ? "dark" : "light"
-            webView.evaluateJavaScript("window.setTheme && window.setTheme('\(theme)')", completionHandler: nil)
+            #endif
         }
 
         // MARK: - Print
 
         private func printDocument() {
             guard let webView, isActiveWebView() else { return }
+            #if os(macOS)
             let info = NSPrintInfo.shared
             info.topMargin = 36; info.bottomMargin = 36
             info.leftMargin = 36; info.rightMargin = 36
@@ -178,6 +222,12 @@ struct WebView: NSViewRepresentable {
             } else {
                 op.run()
             }
+            #elseif os(iOS)
+            let formatter = webView.viewPrintFormatter()
+            let printController = UIPrintInteractionController.shared
+            printController.printFormatter = formatter
+            printController.present(animated: true, completionHandler: nil)
+            #endif
         }
 
         // MARK: - Find
@@ -199,10 +249,22 @@ struct WebView: NSViewRepresentable {
         }
 
         private func isActiveWebView() -> Bool {
-            webView?.window?.isKeyWindow == true
+            #if os(macOS)
+            return webView?.window?.isKeyWindow == true
+            #else
+            return true
+            #endif
         }
 
-        // MARK: - Liens externes
+        // MARK: - Frontmatter
+
+        private func applyFrontmatterVisibility(_ visible: Bool) {
+            lastFrontmatterVisible = visible
+            guard bundleReady, let webView else { return }
+            webView.evaluateJavaScript("window.setFrontmatterVisible && window.setFrontmatterVisible(\(visible ? "true" : "false"))", completionHandler: nil)
+        }
+
+        // MARK: - External links
 
         func webView(
             _: WKWebView,
@@ -212,7 +274,11 @@ struct WebView: NSViewRepresentable {
             if navigationAction.navigationType == .linkActivated,
                let url = navigationAction.request.url
             {
+                #if os(macOS)
                 NSWorkspace.shared.open(url)
+                #elseif os(iOS)
+                UIApplication.shared.open(url)
+                #endif
                 decisionHandler(.cancel)
                 return
             }
