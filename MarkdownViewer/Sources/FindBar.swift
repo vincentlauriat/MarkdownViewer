@@ -6,6 +6,12 @@ struct FindBar: View {
     let onSubmit: (Bool) -> Void  // forward = true ⇒ next, false ⇒ previous
     @FocusState private var focused: Bool
 
+    #if os(macOS)
+    private static let separatorColor = Color(nsColor: .separatorColor)
+    #else
+    private static let separatorColor = Color(uiColor: .separator)
+    #endif
+
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
@@ -46,7 +52,7 @@ struct FindBar: View {
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10))
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(.separator, lineWidth: 0.5)
+                .strokeBorder(Self.separatorColor, lineWidth: 0.5)
         )
         .padding(12)
         .shadow(color: .black.opacity(0.15), radius: 8, y: 2)

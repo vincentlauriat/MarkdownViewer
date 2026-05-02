@@ -42,11 +42,16 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 - [x] Undo / Redo natif via `NSTextView.allowsUndo = true`
 - [x] CFBundleTypeRole : Viewer → Editor
 
-## v3 — Multi-plateforme
+## v3 — Multi-plateforme (Phase A/B/C livrées 2026-05-02, commit `039860a`)
 
-- [ ] Cible iPadOS — réutiliser `DocumentGroup` (déjà cross-platform)
-- [ ] Cible iOS — adapter UI compacte (toggle plutôt que split)
-- [ ] Tester compatibilité Files.app + iCloud Drive
+- [x] **Phase A** — Refacto cross-platform de toutes les sources (`#if os(macOS|iOS)`) : WebView dual NS/UIViewRepresentable + Coordinator partagé, MarkdownEditor wrappers NSTextView/UITextView + Highlighter + Palette, ContentView filtre Split sur iPhone + HSplitView→HStack, FindBar débarrassé d'AppKit
+- [x] **Phase B** — Second target `MarkdownViewerIOS` dans `project.yml` + `Info-iOS.plist` (UISupportsDocumentBrowser, LSSupportsOpeningDocumentsInPlace, UIFileSharingEnabled, iOS 16+, iPhone+iPad)
+- [x] **Phase C** — Asset catalog étendu : entrée universelle 1024x1024 iOS marketing, `Scripts/make-icon.swift` génère le PNG iOS
+- [x] **Phase D** — `xcodebuild` iOS Simulator vert (2026-05-02, après install runtime iOS 26.4.1 ~8.5 Go via `xcodebuild -downloadPlatform iOS`). Un fix iOS 16 dans `FindBar.swift` (`.separator` shape style était iOS 17+, remplacé par helper `#if`-guarded `Color(uiColor:.separator)` / `Color(nsColor:.separatorColor)`). Build CLI nécessite `CODE_SIGNING_ALLOWED=NO` à cause du xattr `com.apple.provenance` macOS Sequoia (Xcode IDE gère ça correctement).
+- [ ] **Phase E** — Smoke test runtime iPad/iPhone Simulator depuis Xcode IDE (ouvrir un .md, tester preview/split/source, find, print, dark mode auto, frontmatter toggle)
+- [ ] **Phase F** — App Store distribution (signing, sandbox audit, review process) — différé
+- [ ] Tester compatibilité Files.app + iCloud Drive — à faire en Phase E
+- [ ] Live reload iPadOS via `NSFilePresenter` — backlog post-v3 si demande
 
 ## v0.2.x — Polish
 
