@@ -69,11 +69,51 @@
         });
     }
 
+    function extractFrontmatter(text) {
+        // Bloc YAML délimité par --- au début du fichier (Obsidian / Tolaria / Jekyll)
+        const m = text.match(/^---\s*\r?\n([\s\S]*?)\r?\n---\s*(?:\r?\n|$)/);
+        if (!m) return { yaml: null, body: text };
+        return { yaml: m[1], body: text.slice(m[0].length) };
+    }
+
+    function escapeHtml(s) {
+        return s
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    let lastHadFrontmatter = false;
+
     window.renderMarkdown = function (text) {
-        const html = md.render(text || '');
+        const { yaml, body } = extractFrontmatter(text || '');
+        lastHadFrontmatter = yaml !== null;
+        let html = '';
+        if (yaml !== null) {
+            html += '<aside class="frontmatter"><pre><code class="language-yaml">'
+                  + escapeHtml(yaml)
+                  + '</code></pre></aside>';
+        }
+        html += md.render(body);
         setHTML(target, html);
+        // Re-highlight YAML block specifically (markdown-it.highlight ne s'applique
+        // pas sur le HTML qu'on injecte nous-mêmes)
+        if (window.hljs && yaml !== null) {
+            const code = target.querySelector('.frontmatter code.language-yaml');
+            if (code) hljs.highlightElement(code);
+        }
         renderMath();
         transformMermaid();
+    };
+
+    window.setFrontmatterVisible = function (visible) {
+        document.body.classList.toggle('hide-frontmatter', !visible);
+    };
+
+    window.hasFrontmatter = function () {
+        return lastHadFrontmatter;
     };
 
     window.setTheme = function (theme) {

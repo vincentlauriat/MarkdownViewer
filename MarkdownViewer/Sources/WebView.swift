@@ -73,6 +73,18 @@ struct WebView: NSViewRepresentable {
             }
             observe(.findNext) { [weak self] _ in self?.runFind(query: nil, forward: true) }
             observe(.findPrevious) { [weak self] _ in self?.runFind(query: nil, forward: false) }
+            observe(.setFrontmatterVisibility) { [weak self] note in
+                let visible = (note.userInfo?["visible"] as? Bool) ?? true
+                self?.applyFrontmatterVisibility(visible)
+            }
+        }
+
+        var lastFrontmatterVisible: Bool = false
+
+        private func applyFrontmatterVisibility(_ visible: Bool) {
+            lastFrontmatterVisible = visible
+            guard bundleReady, let webView else { return }
+            webView.evaluateJavaScript("window.setFrontmatterVisible && window.setFrontmatterVisible(\(visible ? "true" : "false"))", completionHandler: nil)
         }
 
         private func observe(_ name: Notification.Name, action: @escaping @MainActor @Sendable (Notification) -> Void) {
@@ -92,7 +104,11 @@ struct WebView: NSViewRepresentable {
         func flush() {
             guard bundleReady, let webView else { return }
             let payload = encodeForJS(liveMarkdown ?? documentMarkdown)
-            webView.evaluateJavaScript("window.renderMarkdown(\(payload))", completionHandler: nil)
+            let visible = lastFrontmatterVisible ? "true" : "false"
+            webView.evaluateJavaScript(
+                "window.setFrontmatterVisible && window.setFrontmatterVisible(\(visible)); window.renderMarkdown(\(payload))",
+                completionHandler: nil
+            )
         }
 
         // MARK: - Live reload

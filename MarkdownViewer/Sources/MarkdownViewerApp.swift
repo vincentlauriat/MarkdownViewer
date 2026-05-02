@@ -44,4 +44,5 @@ extension Notification.Name {
     static let findNext = Notification.Name("MarkdownViewer.findNext")
     static let findPrevious = Notification.Name("MarkdownViewer.findPrevious")
     static let toggleViewMode = Notification.Name("MarkdownViewer.toggleViewMode")
+    static let setFrontmatterVisibility = Notification.Name("MarkdownViewer.setFrontmatterVisibility")
 }

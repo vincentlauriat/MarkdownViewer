@@ -3,8 +3,21 @@ import SwiftUI
 struct ContentView: View {
     @Binding var document: MarkdownDocument
     @SceneStorage("viewMode") private var viewMode: ViewMode = .preview
+    @SceneStorage("showFrontmatter") private var showFrontmatter: Bool = false
     @State private var findQuery: String = ""
     @State private var showFind: Bool = false
+
+    private var hasFrontmatter: Bool {
+        let trimmed = document.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.hasPrefix("---") else { return false }
+        // Cherche le délimiteur fermant `---` sur sa propre ligne
+        let lines = document.text.components(separatedBy: "\n")
+        guard lines.first?.trimmingCharacters(in: .whitespaces) == "---" else { return false }
+        for line in lines.dropFirst() {
+            if line.trimmingCharacters(in: .whitespaces) == "---" { return true }
+        }
+        return false
+    }
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -41,7 +54,19 @@ struct ContentView: View {
                 .pickerStyle(.segmented)
                 .frame(width: 150)
             }
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showFrontmatter.toggle()
+                } label: {
+                    Image(systemName: showFrontmatter ? "tag.fill" : "tag")
+                }
+                .help(showFrontmatter ? "Hide YAML frontmatter" : "Show YAML frontmatter")
+                .disabled(!hasFrontmatter)
+                .keyboardShortcut("y", modifiers: [.command, .shift])
+            }
         }
+        .onAppear { broadcastFrontmatter() }
+        .onChange(of: showFrontmatter) { _ in broadcastFrontmatter() }
         .onReceive(NotificationCenter.default.publisher(for: .toggleFindBar)) { _ in
             if showFind { showFind = false; findQuery = "" } else { showFind = true }
         }
@@ -69,5 +94,9 @@ struct ContentView: View {
 
     private func post(_ name: Notification.Name, userInfo: [AnyHashable: Any]? = nil) {
         NotificationCenter.default.post(name: name, object: nil, userInfo: userInfo)
+    }
+
+    private func broadcastFrontmatter() {
+        post(.setFrontmatterVisibility, userInfo: ["visible": showFrontmatter])
     }
 }
