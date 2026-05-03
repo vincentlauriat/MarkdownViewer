@@ -7,6 +7,7 @@
 Double‑click a Markdown file. See it rendered. Edit it in your favourite editor — it reloads on the fly.
 
 [![Platform](https://img.shields.io/badge/platform-macOS%2013%2B-blue.svg)](https://www.apple.com/macos)
+[![Release](https://img.shields.io/github/v/release/vincentlauriat/MarkdownViewer?color=brightgreen)](https://github.com/vincentlauriat/MarkdownViewer/releases/latest)
 [![Swift](https://img.shields.io/badge/Swift-5.9-orange.svg)](https://swift.org)
 [![SwiftUI](https://img.shields.io/badge/SwiftUI-Document%20Group-purple.svg)](https://developer.apple.com/swiftui)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](#license)
@@ -37,10 +38,18 @@ It is a true native macOS document app — multi‑window, multi‑file, dark‑
 | 🔍 **Find** | `Cmd+F` opens a native search bar, `Cmd+G` / `Cmd+Shift+G` to navigate |
 | 🖨️ **Print / Export PDF** | `Cmd+P` uses the native print dialog (the standard "Save as PDF" works) |
 | ✏️ **Editor mode** | Toggle Preview / Split / Source via toolbar (`Cmd+/` cycles), syntax-highlighted `NSTextView`, native Cmd+S / dirty indicator / undo / redo |
+| 📐 **Line numbers gutter** | Native `NSRulerView` gutter on Source and Split modes — width grows with the document, soft-wrapped continuations are not numbered (Xcode / VS Code convention) |
 | 🏷️ **Frontmatter toggle** | Auto-detects YAML frontmatter (Obsidian / Tolaria / Jekyll) and lets you hide it (`⇧⌘Y`) for a cleaner read |
+| 🔄 **In-app updater** | Checks GitHub Releases on launch (debounced 7 days) and offers a `Check for Updates…` menu — semver-compared, ad-hoc-signed DMGs |
 | 🔒 **Safe by default** | `markdown-it` HTML disabled, DOMPurify on top, all rendering offline (`file://`) |
 
-## Quick start
+## Install
+
+Grab the latest pre-built `.dmg` from the [GitHub Releases page](https://github.com/vincentlauriat/MarkdownViewer/releases/latest), mount it, and drag `MarkdownViewer.app` to `/Applications`. The app is ad-hoc signed for personal distribution — on first launch right-click → **Open** to bypass Gatekeeper. Subsequent launches don't need this.
+
+Once installed, MarkdownViewer's built-in updater (added in v0.3.0) will prompt you when a new release is published.
+
+## Quick start (build from source)
 
 **Requirements:** macOS 13 (Ventura) or later, Xcode 15+ and [XcodeGen](https://github.com/yonaskolb/XcodeGen).
 
@@ -139,22 +148,29 @@ From now on, double‑clicking any `.md` opens it in MarkdownViewer in a new win
 
 ```
 MarkdownViewer/
-├── project.yml                    # XcodeGen spec (source of truth)
+├── project.yml                    # XcodeGen spec (source of truth, macOS + iOS targets)
 ├── MarkdownViewer/
 │   ├── Sources/
-│   │   ├── MarkdownViewerApp.swift   # @main, DocumentGroup, menu commands
-│   │   ├── MarkdownDocument.swift    # FileDocument + UTType.markdown
-│   │   ├── ContentView.swift         # WebView + FindBar overlay
-│   │   ├── WebView.swift             # NSViewRepresentable around WKWebView
-│   │   ├── FindBar.swift             # SwiftUI floating find bar
-│   │   └── FileWatcher.swift         # DispatchSource-based live reload
+│   │   ├── MarkdownViewerApp.swift     # @main, DocumentGroup, menu commands
+│   │   ├── MarkdownDocument.swift      # FileDocument + UTType.markdown
+│   │   ├── ContentView.swift           # Toolbar + WebView / MarkdownEditor + FindBar overlay
+│   │   ├── ViewMode.swift              # enum Preview / Split / Source
+│   │   ├── WebView.swift               # NS/UIViewRepresentable around WKWebView
+│   │   ├── MarkdownEditor.swift        # NS/UITextView wrapper + NSTextStorage highlighter
+│   │   ├── LineNumberRulerView.swift   # NSRulerView gutter (macOS only, #if os(macOS))
+│   │   ├── FindBar.swift               # SwiftUI floating find bar
+│   │   ├── FileWatcher.swift           # DispatchSource-based live reload (macOS)
+│   │   └── UpdateChecker.swift         # GitHub Releases polling + NSAlert (macOS)
 │   └── Resources/
-│       ├── web/                      # index.html + render.js + vendor/
-│       └── Assets.xcassets/          # AppIcon, AccentColor
+│       ├── web/                        # index.html + render.js + vendor/
+│       └── Assets.xcassets/            # AppIcon (macOS .icns + iOS marketing 1024)
 ├── Scripts/
-│   ├── fetch-vendor.sh               # Downloads pinned JS/CSS from jsDelivr
-│   └── build.sh                      # End-to-end: fetch → xcodegen → xcodebuild
-└── sample.md                         # Stress-test document covering every feature
+│   ├── fetch-vendor.sh                 # Downloads pinned JS/CSS from jsDelivr
+│   ├── build.sh                        # End-to-end: fetch → xcodegen → xcodebuild
+│   ├── make-icon.swift                 # Generates the AppIcon PNGs from a single Swift draw
+│   └── release.sh                      # Build Release + ad-hoc codesign + DMG packaging
+├── sample.md                           # Stress-test document covering every feature
+└── sample-long.md                      # 541-line stress doc for the line-numbers gutter
 ```
 
 ## Development
@@ -176,11 +192,14 @@ The bundle is signed ad‑hoc (`CODE_SIGN_IDENTITY=-`) which is enough for perso
 
 - [x] **Viewer (v0.1)** — file association, rendering, live reload, find, print, M↓ icon
 - [x] **Editor (v0.2)** — Preview / Split / Source toggle, native `Cmd+S`, dirty indicator, undo / redo, syntax-highlighted source
-- [x] **Frontmatter toggle** — detect & hide YAML metadata (Obsidian / Tolaria style)
-- [ ] **iPadOS / iOS (v0.3)** — same `DocumentGroup`, compact UI (brief auto-generated by a scheduled agent on 2026-05-15)
+- [x] **Frontmatter toggle (v0.2.x)** — detect & hide YAML metadata (Obsidian / Tolaria style)
+- [x] **iPadOS / iOS scaffold (v0.3)** — second target with `UIViewRepresentable` wrappers, shared sources via `#if os(macOS|iOS)`, asset catalog extended with iOS marketing icon. Runtime smoke-test still pending an App Store distribution decision.
+- [x] **In-app updater (v0.4)** — GitHub Releases polling, semver-numeric compare, `Check for Updates…` menu, `Scripts/release.sh` to package signed DMGs
+- [x] **Line numbers gutter (v0.5)** — `NSRulerView` subclass on the source editor, soft-wrap-aware, dynamic width
 - [ ] **Quick Look extension** — preview in Finder with the spacebar
 - [ ] **Theme picker** — GitHub light / dark / sepia / custom
 - [ ] **Floating table of contents** — for long docs
+- [ ] **Current-line highlight** in the gutter (toggleable)
 
 ## Contributing
 

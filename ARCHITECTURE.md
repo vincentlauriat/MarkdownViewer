@@ -87,17 +87,25 @@
 
 ```
 MarkdownViewer/Sources/
-├── MarkdownViewerApp.swift   — @main, DocumentGroup(newDocument:), commandes menu
-├── MarkdownDocument.swift    — FileDocument + UTType.markdown (read+write)
-├── ContentView.swift         — Toolbar Picker + Button frontmatter + ZStack(content, FindBar)
-│                               switch Preview / Split / Source via @SceneStorage
-├── ViewMode.swift            — enum Preview / Split / Source + helper cycle
-├── WebView.swift             — NSViewRepresentable autour de WKWebView
-│                               (Coordinator possède FileWatcher + observers)
-├── MarkdownEditor.swift      — wrapper NSTextView avec syntax highlighting
-│                               via NSTextStorage (regex) + undo/redo natif
-├── FindBar.swift             — find bar SwiftUI flottante (à la NSSearchField)
-└── FileWatcher.swift         — live reload basé sur DispatchSource
+├── MarkdownViewerApp.swift     — @main, DocumentGroup(newDocument:), commandes menu
+├── MarkdownDocument.swift      — FileDocument + UTType.markdown (read+write)
+├── ContentView.swift           — Toolbar Picker + Button frontmatter + ZStack(content, FindBar)
+│                                 switch Preview / Split / Source via @SceneStorage
+├── ViewMode.swift              — enum Preview / Split / Source + helper cycle
+├── WebView.swift               — NS/UIViewRepresentable autour de WKWebView
+│                                 (Coordinator possède FileWatcher + observers)
+├── MarkdownEditor.swift        — wrapper NS/UITextView avec syntax highlighting
+│                                 via NSTextStorage (regex) + undo/redo natif,
+│                                 Highlighter + Palette partagés macOS/iOS
+├── LineNumberRulerView.swift   — sous-classe NSRulerView attachée comme
+│                                 verticalRulerView de l'éditeur. macOS uniquement
+│                                 (#if os(macOS)). Soft-wrap-aware : seul le 1er
+│                                 fragment de chaque paragraphe reçoit un numéro.
+├── FindBar.swift               — find bar SwiftUI flottante (à la NSSearchField)
+├── FileWatcher.swift           — live reload basé sur DispatchSource (macOS uniquement)
+└── UpdateChecker.swift         — polling GitHub Releases + NSAlert (macOS uniquement).
+                                  Auto-check au lancement (debounce 7j via UserDefaults)
+                                  + entrée menu "Check for Updates…".
 
 MarkdownViewer/Resources/
 └── web/
@@ -143,6 +151,21 @@ MarkdownViewer/Resources/
 6. Le syntax highlighting de l'éditeur est implémenté via spans d'attributs sur `NSTextStorage`, recompilé sur chaque `textDidChange` via un petit set de regex (titres, gras, italique, code inline, fenced code, liens, citations, marqueurs de listes)
 7. Undo / Redo natif via `NSTextView.allowsUndo = true`
 8. `Cmd+/` poste `.toggleViewMode` qui cycle Preview → Split → Source → Preview
+
+### Gutter de numéros de ligne (v0.5, macOS uniquement)
+1. `MarkdownEditor.makeNSView` instancie `LineNumberRulerView(textView:scrollView:)`, l'attache à `scroll.verticalRulerView` et active `hasVerticalRuler = true`, `rulersVisible = true`. AppKit prend en charge la synchro de scroll, la prise en compte du wrapping et le clipping nativement — exactement la même plomberie que la gutter de Xcode.
+2. La largeur est recalculée à chaque `NSText.didChangeNotification` à partir de `ceil(log10(lineCount + 1))` digits + padding horizontal (minimum 28 pt). Quand elle change de plus de 0.5 pt, le ruler appelle `invalidateHashMarks()` pour qu'AppKit re-layout sans flicker.
+3. Trois observers maintiennent le ruler en cohérence : `NSText.didChangeNotification` (édition), `boundsDidChangeNotification` sur le clip view (scroll), `frameDidChangeNotification` sur le text view (resize de fenêtre).
+4. `drawHashMarksAndLabels(in:)` parcourt la range de glyphs visibles via `layoutManager.enumerateLineFragments(forGlyphRange:)`. Un fragment reçoit un numéro uniquement si le caractère à sa position est en début de document ou juste après un `\n` — les continuations soft-wrap sont skip (convention Xcode / VS Code).
+5. Deux edge cases gérés explicitement : un document vide affiche quand même `"1"` en haut, et un document terminé par `\n` numérote la dernière ligne vide via `layoutManager.extraLineFragmentRect`.
+6. Le Coordinator garde un `weak ruler` pour que `updateNSView` puisse appeler `ruler?.needsDisplay = true` quand le texte est remplacé depuis l'extérieur (live-reload).
+
+### Auto-update (v0.4, macOS uniquement)
+1. `MarkdownViewerApp` enregistre un `UpdateChecker` et lance un check automatique au démarrage, debouncé 7 jours via `UserDefaults("MarkdownViewer.lastUpdateCheck")`.
+2. Le checker fetch `https://api.github.com/repos/vincentlauriat/MarkdownViewer/releases/latest`, décode `tag_name` (ex. `v0.5.0`) et le body, compare le tag à `Bundle.main.CFBundleShortVersionString` en split semver numérique (`"1.10"` > `"1.9"` — la compare lexicographique se tromperait).
+3. Quand une nouvelle version est trouvée, une `NSAlert` affiche les release notes et trois boutons : **Download** (ouvre l'URL GitHub via `NSWorkspace.shared.open`), **Later**, et **Skip this version** (stocké en `UserDefaults` pour que l'utilisateur ne soit plus prompt jusqu'à la release suivante).
+4. L'entrée menu **MarkdownViewer → Check for Updates…** déclenche un check non-silent qui affiche toujours un résultat (y compris "you're up to date") — pratique pour vérifier après une release.
+5. Le pipeline qui produit les DMG publiés est `Scripts/release.sh <version>` : build Release avec `CODE_SIGNING_ALLOWED=NO`, copie via `ditto --norsrc --noextattr --noacl` vers un staging propre (évite le xattr `com.apple.provenance` que Sequoia attache et qui casse les `codesign` ultérieurs), signe ad-hoc, puis package via `hdiutil create -format UDZO`. Le script imprime la commande `gh release create` suggérée — il ne push jamais tout seul.
 
 ### Toggle frontmatter YAML (v0.2.x)
 1. `render.js` exécute `extractFrontmatter(text)` contre `^---\n…\n---\n` au début de la source. Le YAML capturé est rendu dans un `<aside class="frontmatter">` stylisé au-dessus du contenu principal ; le body est parsé par markdown-it normalement

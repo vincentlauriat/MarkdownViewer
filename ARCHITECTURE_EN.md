@@ -76,17 +76,24 @@
 
 ```
 MarkdownViewer/Sources/
-├── MarkdownViewerApp.swift   — @main, DocumentGroup(newDocument:), menu commands
-├── MarkdownDocument.swift    — FileDocument + UTType.markdown (read+write)
-├── ContentView.swift         — Toolbar Picker + ZStack(content, FindBar)
-│                               switches Preview / Split / Source via @SceneStorage
-├── ViewMode.swift            — enum Preview / Split / Source + cycle helper
-├── WebView.swift             — NSViewRepresentable around WKWebView
-│                               (Coordinator owns FileWatcher + observers)
-├── MarkdownEditor.swift      — NSTextView wrapper with NSTextStorage syntax
-│                               highlighting (regex-based) + native undo/redo
-├── FindBar.swift             — SwiftUI floating find bar (NSSearchField-like)
-└── FileWatcher.swift         — DispatchSource-based live reload
+├── MarkdownViewerApp.swift     — @main, DocumentGroup(newDocument:), menu commands
+├── MarkdownDocument.swift      — FileDocument + UTType.markdown (read+write)
+├── ContentView.swift           — Toolbar Picker + ZStack(content, FindBar)
+│                                 switches Preview / Split / Source via @SceneStorage
+├── ViewMode.swift              — enum Preview / Split / Source + cycle helper
+├── WebView.swift               — NS/UIViewRepresentable around WKWebView
+│                                 (Coordinator owns FileWatcher + observers)
+├── MarkdownEditor.swift        — NS/UITextView wrapper with NSTextStorage syntax
+│                                 highlighting (regex-based) + native undo/redo,
+│                                 shared Highlighter + Palette across macOS/iOS
+├── LineNumberRulerView.swift   — NSRulerView subclass attached as the editor's
+│                                 verticalRulerView. macOS only (#if os(macOS)).
+│                                 Soft-wrap-aware: only paragraph starts get a number.
+├── FindBar.swift               — SwiftUI floating find bar (NSSearchField-like)
+├── FileWatcher.swift           — DispatchSource-based live reload (macOS only)
+└── UpdateChecker.swift         — GitHub Releases polling + NSAlert (macOS only).
+                                  Auto-check at launch (debounced 7d via UserDefaults)
+                                  + "Check for Updates…" menu item.
 
 MarkdownViewer/Resources/
 └── web/
@@ -132,6 +139,21 @@ MarkdownViewer/Resources/
 6. Syntax highlighting in the editor is implemented via `NSTextStorage` attribute spans, recomputed on every `textDidChange` via a small set of regex (headings, bold, italic, inline code, fenced code, links, blockquotes, list markers)
 7. Native undo/redo comes for free with `NSTextView.allowsUndo = true`
 8. `Cmd+/` posts `.toggleViewMode` which cycles Preview → Split → Source → Preview
+
+### Line numbers gutter (v0.5, macOS only)
+1. `MarkdownEditor.makeNSView` instantiates `LineNumberRulerView(textView:scrollView:)`, attaches it as `scroll.verticalRulerView` and sets `hasVerticalRuler = true`, `rulersVisible = true`. AppKit takes over scroll synchronisation, line-wrapping awareness and clipping for free — same plumbing Xcode's gutter uses.
+2. Width is recomputed on every `NSText.didChangeNotification` from `ceil(log10(lineCount + 1))` digits + horizontal padding (minimum 28 pt). When it changes by more than 0.5 pt the ruler calls `invalidateHashMarks()` so AppKit re-lays it out without flicker.
+3. Three observers keep the ruler in sync: `NSText.didChangeNotification` (text edits), `boundsDidChangeNotification` on the clip view (scroll), `frameDidChangeNotification` on the text view (window resize).
+4. `drawHashMarksAndLabels(in:)` walks the visible glyph range with `layoutManager.enumerateLineFragments(forGlyphRange:)`. A fragment receives a number only when the character at its location is at the document start or right after a `\n` — soft-wrap continuations are skipped (Xcode / VS Code convention).
+5. Two edge cases are explicitly handled: an empty document still draws `"1"` at the top, and a document ending with `\n` numbers the trailing empty line via `layoutManager.extraLineFragmentRect`.
+6. The Coordinator keeps a `weak ruler` so `updateNSView` can call `ruler?.needsDisplay = true` when the document text is replaced from outside (live-reload).
+
+### Auto-update (v0.4, macOS only)
+1. `MarkdownViewerApp` registers an `UpdateChecker` and runs an auto-check on launch, debounced 7 days via `UserDefaults("MarkdownViewer.lastUpdateCheck")`.
+2. The checker fetches `https://api.github.com/repos/vincentlauriat/MarkdownViewer/releases/latest`, decodes `tag_name` (e.g. `v0.5.0`) and the body, compares the tag against `Bundle.main.CFBundleShortVersionString` using a numeric semver split (`"1.10"` > `"1.9"` — lexicographic compare would get this wrong).
+3. When a newer version is found, an `NSAlert` shows the release notes and three buttons: **Download** (opens the GitHub release URL via `NSWorkspace.shared.open`), **Later**, and **Skip this version** (stored in `UserDefaults` so the user is not prompted again until the next release).
+4. The **MarkdownViewer → Check for Updates…** menu item triggers a non-silent check that always shows a result (including "you're up to date") — handy for verifying after a release.
+5. The pipeline that produces the published DMGs is `Scripts/release.sh <version>`: builds Release with `CODE_SIGNING_ALLOWED=NO`, copies via `ditto --norsrc --noextattr --noacl` to a clean staging directory (avoids the `com.apple.provenance` xattr that Sequoia attaches and that breaks subsequent `codesign`), ad-hoc signs, then packages with `hdiutil create -format UDZO`. The script prints the suggested `gh release create` command — it never pushes on its own.
 
 ### YAML frontmatter toggle (v0.2.x)
 1. `render.js` runs `extractFrontmatter(text)` against `^---\n…\n---\n` at the start of the source. The captured YAML is rendered in a styled `<aside class="frontmatter">` above the main content; the body is parsed by markdown-it as usual.
