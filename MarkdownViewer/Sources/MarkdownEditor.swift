@@ -80,9 +80,17 @@ struct MarkdownEditor: NSViewRepresentable {
         textView.font = MarkdownEditor.baseFont
         textView.textContainerInset = NSSize(width: 16, height: 16)
         textView.drawsBackground = false
+        textView.postsFrameChangedNotifications = true
         textView.string = text
         context.coordinator.textView = textView
         Highlighter.apply(to: textView.textStorage, baseFont: MarkdownEditor.baseFont)
+
+        let ruler = LineNumberRulerView(textView: textView, scrollView: scroll)
+        scroll.verticalRulerView = ruler
+        scroll.hasVerticalRuler = true
+        scroll.rulersVisible = true
+        context.coordinator.ruler = ruler
+
         return scroll
     }
 
@@ -93,6 +101,7 @@ struct MarkdownEditor: NSViewRepresentable {
             textView.string = text
             textView.selectedRanges = selectedRanges
             Highlighter.apply(to: textView.textStorage, baseFont: MarkdownEditor.baseFont)
+            context.coordinator.ruler?.needsDisplay = true
         }
     }
 
@@ -102,6 +111,7 @@ struct MarkdownEditor: NSViewRepresentable {
     final class Coordinator: NSObject, NSTextViewDelegate {
         @Binding var text: String
         weak var textView: NSTextView?
+        weak var ruler: LineNumberRulerView?
 
         init(text: Binding<String>) { self._text = text }
 

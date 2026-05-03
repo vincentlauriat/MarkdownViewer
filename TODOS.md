@@ -70,6 +70,10 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 - [ ] **Migration future vers Sparkle** : remplacer UpdateChecker, ajouter Sparkle SwiftPM, générer paire EdDSA, configurer `SUFeedURL` + `SUPublicEDKey` dans Info.plist, pipeline release avec `generate_appcast` + notarization Apple Developer ID — **différé**
 - [ ] **iOS / iPadOS** : pas applicable hors App Store / TestFlight — feature macOS uniquement
 
+## v0.5 — Polish éditeur (en cours, 2026-05-03)
+
+- [x] Numéros de ligne dans une marge gauche (gutter) sur le `MarkdownEditor`, modes Source + Split, **macOS uniquement** — `NSRulerView` sous-classée, ~170 lignes Swift, spec : `docs/superpowers/specs/2026-05-03-line-numbers-gutter-design.md`. Validé visuellement par Vincent le 2026-05-04 sur `sample-long.md` (541 lignes, transition 2→3 digits, soft-wrap, mode Source + Split, dark/light, undo)
+
 ## Backlog (post-v3)
 
 - [ ] Quick Look extension (preview Markdown dans Finder avec barre d'espace)
