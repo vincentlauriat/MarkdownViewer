@@ -104,13 +104,54 @@ codesign --verify --strict --deep "$STAGING"
 
 DMG="$ROOT/MarkdownViewer-$VERSION.dmg"
 rm -f "$DMG"
-echo "→ hdiutil create $DMG"
-hdiutil create \
-  -volname "MarkdownViewer $VERSION" \
-  -srcfolder "$STAGING" \
-  -ov \
-  -format UDZO \
-  "$DMG" >/dev/null
+
+# 5b. Build a friendly installer layout: signed .app on the left, /Applications
+# alias on the right, with a background image showing an arrow between them.
+DMG_VOLNAME="MarkdownViewer $VERSION"
+DMG_LAYOUT_DIR="$STAGING_DIR/dmg-layout"
+mkdir -p "$DMG_LAYOUT_DIR/.background"
+ditto --norsrc --noextattr --noacl "$STAGING" "$DMG_LAYOUT_DIR/MarkdownViewer.app"
+ln -s /Applications "$DMG_LAYOUT_DIR/Applications"
+"$ROOT/Scripts/make-dmg-background.swift" "$DMG_LAYOUT_DIR/.background/background.png" >/dev/null
+
+echo "→ Creating writable DMG to configure Finder layout"
+RW_DMG="$STAGING_DIR/temp.dmg"
+hdiutil create -volname "$DMG_VOLNAME" -srcfolder "$DMG_LAYOUT_DIR" \
+  -fs HFS+ -format UDRW -ov "$RW_DMG" >/dev/null
+
+DMG_MOUNT=$(hdiutil attach -nobrowse -noverify -noautoopen "$RW_DMG" \
+  | awk -F '\t' 'END {print $NF}')
+echo "→ Mounted at $DMG_MOUNT — applying Finder layout via AppleScript"
+
+# Position MarkdownViewer.app at (140, 200) and Applications at (400, 200),
+# in a 540 × 380 window. The background paints the arrow between them.
+osascript <<APPLESCRIPT
+tell application "Finder"
+    tell disk "$DMG_VOLNAME"
+        open
+        set current view of container window to icon view
+        set toolbar visible of container window to false
+        set statusbar visible of container window to false
+        set the bounds of container window to {200, 100, 740, 480}
+        set view_options to the icon view options of container window
+        set arrangement of view_options to not arranged
+        set icon size of view_options to 128
+        set background picture of view_options to file ".background:background.png"
+        set position of item "MarkdownViewer.app" of container window to {140, 200}
+        set position of item "Applications" of container window to {400, 200}
+        update without registering applications
+        delay 1
+        close
+    end tell
+end tell
+APPLESCRIPT
+
+# Make sure the .DS_Store is flushed before unmounting
+sync
+hdiutil detach "$DMG_MOUNT" -quiet
+
+echo "→ Converting RW DMG to compressed read-only $DMG"
+hdiutil convert "$RW_DMG" -format UDZO -imagekey zlib-level=9 -ov -o "$DMG" >/dev/null
 
 rm -rf "$STAGING_DIR"
 
