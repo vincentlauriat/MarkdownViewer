@@ -14,7 +14,6 @@
       <sparkle:releaseNotesLink>https://github.com/vincentlauriat/MarkdownViewer/releases/tag/v0.6.0</sparkle:releaseNotesLink>
       <enclosure
         url="https://github.com/vincentlauriat/MarkdownViewer/releases/download/v0.6.0/MarkdownViewer-0.6.0.dmg"
-        length="3677176"
         type="application/octet-stream"
         sparkle:edSignature="bPiQIL8kb19yl1W4AeN4mF4DE8IlhO/IVGVXBrpfZSSPr0/aH8Ct6Eg4B/XMMMXf2/8KSrjiT5C8lFzuGonYAw==" length="3677176" />
     </item>

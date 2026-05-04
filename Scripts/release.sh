@@ -137,9 +137,9 @@ if [ ! -x "$SPARKLE_TOOLS/bin/sign_update" ]; then
 fi
 
 echo "→ Signing $DMG with Sparkle EdDSA key"
+# `sign_update` returns: sparkle:edSignature="..." length="<bytes>"
+# (so we don't add `length=` ourselves on the <enclosure> — that would duplicate).
 SPARKLE_SIG_LINE=$("$SPARKLE_TOOLS/bin/sign_update" --account "MarkdownViewer" "$DMG")
-
-DMG_LENGTH=$(stat -f%z "$DMG")
 
 echo "→ Writing $ROOT/appcast.xml"
 PUB_DATE=$(date -R)
@@ -160,7 +160,6 @@ cat > "$ROOT/appcast.xml" <<APPCAST
       <sparkle:releaseNotesLink>https://github.com/vincentlauriat/MarkdownViewer/releases/tag/v$VERSION</sparkle:releaseNotesLink>
       <enclosure
         url="https://github.com/vincentlauriat/MarkdownViewer/releases/download/v$VERSION/MarkdownViewer-$VERSION.dmg"
-        length="$DMG_LENGTH"
         type="application/octet-stream"
         $SPARKLE_SIG_LINE />
     </item>
