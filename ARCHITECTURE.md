@@ -103,9 +103,12 @@ MarkdownViewer/Sources/
 │                                 fragment de chaque paragraphe reçoit un numéro.
 ├── FindBar.swift               — find bar SwiftUI flottante (à la NSSearchField)
 ├── FileWatcher.swift           — live reload basé sur DispatchSource (macOS uniquement)
-└── UpdateChecker.swift         — polling GitHub Releases + NSAlert (macOS uniquement).
-                                  Auto-check au lancement (debounce 7j via UserDefaults)
-                                  + entrée menu "Check for Updates…".
+└── HelpWindows.swift           — fenêtres internes Help / What's New / About
+                                  (macOS uniquement). Help & What's New
+                                  fetchent en live depuis GitHub raw / API et
+                                  rendent via le même pipeline WebView que les
+                                  documents. About remplace le panel système
+                                  pour exposer un bouton "View on GitHub".
 
 MarkdownViewer/Resources/
 └── web/
@@ -160,12 +163,20 @@ MarkdownViewer/Resources/
 5. Deux edge cases gérés explicitement : un document vide affiche quand même `"1"` en haut, et un document terminé par `\n` numérote la dernière ligne vide via `layoutManager.extraLineFragmentRect`.
 6. Le Coordinator garde un `weak ruler` pour que `updateNSView` puisse appeler `ruler?.needsDisplay = true` quand le texte est remplacé depuis l'extérieur (live-reload).
 
-### Auto-update (v0.4, macOS uniquement)
-1. `MarkdownViewerApp` enregistre un `UpdateChecker` et lance un check automatique au démarrage, debouncé 7 jours via `UserDefaults("MarkdownViewer.lastUpdateCheck")`.
-2. Le checker fetch `https://api.github.com/repos/vincentlauriat/MarkdownViewer/releases/latest`, décode `tag_name` (ex. `v0.5.0`) et le body, compare le tag à `Bundle.main.CFBundleShortVersionString` en split semver numérique (`"1.10"` > `"1.9"` — la compare lexicographique se tromperait).
-3. Quand une nouvelle version est trouvée, une `NSAlert` affiche les release notes et trois boutons : **Download** (ouvre l'URL GitHub via `NSWorkspace.shared.open`), **Later**, et **Skip this version** (stocké en `UserDefaults` pour que l'utilisateur ne soit plus prompt jusqu'à la release suivante).
-4. L'entrée menu **MarkdownViewer → Check for Updates…** déclenche un check non-silent qui affiche toujours un résultat (y compris "you're up to date") — pratique pour vérifier après une release.
-5. Le pipeline qui produit les DMG publiés est `Scripts/release.sh <version>` : build Release avec `CODE_SIGNING_ALLOWED=NO`, copie via `ditto --norsrc --noextattr --noacl` vers un staging propre (évite le xattr `com.apple.provenance` que Sequoia attache et qui casse les `codesign` ultérieurs), signe ad-hoc, puis package via `hdiutil create -format UDZO`. Le script imprime la commande `gh release create` suggérée — il ne push jamais tout seul.
+### Auto-update via Sparkle 2 (v0.6, macOS uniquement)
+1. `MarkdownViewerApp` instancie un `SPUStandardUpdaterController(startingUpdater: true, …)`. Sparkle commence à poller au démarrage et selon un schedule de 24h (`SUEnableAutomaticChecks` + `SUScheduledCheckInterval: 86400` dans `Info.plist`).
+2. Sparkle lit `SUFeedURL` depuis `Info.plist` (= `https://raw.githubusercontent.com/vincentlauriat/MarkdownViewer/main/appcast.xml`) et télécharge l'appcast.
+3. Chaque item de l'appcast est signé avec une signature EdDSA (attribut `sparkle:edSignature` sur `<enclosure>`). Sparkle vérifie la signature contre la clé publique embarquée dans `Info.plist` (`SUPublicEDKey`) avant d'accepter une mise à jour — en plus des vérifications Apple Developer ID + notarization.
+4. Si l'appcast liste une `<sparkle:version>` plus haute que le `CFBundleShortVersionString` courant, l'UI Sparkle propose **Install and Relaunch** / **Remind Me Later** / **Skip This Version**. À l'install, Sparkle télécharge le DMG, le monte, valide la signature, swap le `.app` courant, et relance la nouvelle version — entièrement automatique, sans drag-and-drop utilisateur.
+5. L'entrée menu **MarkdownViewer → Check for Updates…** appelle `updaterController.checkForUpdates(nil)` qui force un check non-silent (affiche un résultat même si l'app est à jour).
+6. Le pipeline qui produit les DMG publiés est `Scripts/release.sh <version>`. Après notarization Apple + stapling, il auto-fetch le `sign_update` de Sparkle 2 (caché dans `.sparkle-tools/`, gitignored), utilise la clé privée EdDSA depuis le keychain macOS (account "MarkdownViewer", générée une fois via `generate_keys`) pour signer le DMG, puis écrit / écrase le `appcast.xml` à la racine du repo avec la nouvelle entrée. Le script imprime les deux commandes suggérées (`gh release create` + `git add appcast.xml && commit && push`) — il ne push jamais tout seul.
+
+### Fenêtres internes Help / What's New / About (v0.6, macOS uniquement)
+1. **Help** (`⌘?`) — `HelpWindowView` fetch `https://raw.githubusercontent.com/vincentlauriat/MarkdownViewer/main/README.md` via URLSession, puis injecte le markdown dans le même pipeline `WebView` que les documents. Un bouton footer ouvre la page README sur GitHub dans Safari.
+2. **What's New** — `WhatsNewWindowView` interroge `https://api.github.com/repos/vincentlauriat/MarkdownViewer/releases`, décode le JSON, et concatène les `body` markdown de chaque release dans un seul document avec headers `## tag_name` + date, rendu de la même façon.
+3. **About** — `AboutWindowView` remplace le panel About SwiftUI standard via `CommandGroup(replacing: .appInfo)`. Affiche l'icône (96×96), le nom, version + build (lus depuis `CFBundleShortVersionString` et `CFBundleVersion`), description, bouton **View on GitHub**, et copyright. `windowResizability(.contentSize)` empêche le resize, mimicking le panel About système.
+4. Les trois fenêtres sont exposées via des scenes SwiftUI `Window` avec des `id` stables (`"about"`, `"help"`, `"whats-new"`) ; les menu items utilisent `@Environment(\.openWindow)` pour les ouvrir.
+5. **Piège évité** : une extension `View` qui wrappait `self` dans son body causait une récursion infinie (`KERN_PROTECTION_FAILURE` stack overflow). Toujours utiliser une sub-view sibling (ici `FooterBar`), pas une extension qui ré-émet la calling view.
 
 ### Toggle frontmatter YAML (v0.2.x)
 1. `render.js` exécute `extractFrontmatter(text)` contre `^---\n…\n---\n` au début de la source. Le YAML capturé est rendu dans un `<aside class="frontmatter">` stylisé au-dessus du contenu principal ; le body est parsé par markdown-it normalement

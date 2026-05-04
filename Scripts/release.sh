@@ -82,7 +82,21 @@ STAGING="$STAGING_DIR/MarkdownViewer.app"
 echo "→ Staging to $STAGING_DIR"
 ditto --norsrc --noextattr --noacl "$APP" "$STAGING"
 
-echo "→ Codesigning with Developer ID + Hardened Runtime"
+echo "→ Codesigning Sparkle.framework nested binaries (deepest first)"
+SPARKLE_FW="$STAGING/Contents/Frameworks/Sparkle.framework"
+SPARKLE_VER="$SPARKLE_FW/Versions/B"
+codesign --force --options runtime --timestamp --sign "$SIGNING_IDENTITY" \
+  "$SPARKLE_VER/Autoupdate"
+codesign --force --options runtime --timestamp --sign "$SIGNING_IDENTITY" \
+  "$SPARKLE_VER/XPCServices/Downloader.xpc"
+codesign --force --options runtime --timestamp --sign "$SIGNING_IDENTITY" \
+  "$SPARKLE_VER/XPCServices/Installer.xpc"
+codesign --force --options runtime --timestamp --sign "$SIGNING_IDENTITY" \
+  "$SPARKLE_VER/Updater.app"
+codesign --force --options runtime --timestamp --sign "$SIGNING_IDENTITY" \
+  "$SPARKLE_FW"
+
+echo "→ Codesigning the app itself with Developer ID + Hardened Runtime"
 codesign --force --options runtime --timestamp \
   --sign "$SIGNING_IDENTITY" \
   "$STAGING"
@@ -111,14 +125,56 @@ echo "→ Stapling notarization ticket to the DMG"
 xcrun stapler staple "$DMG"
 xcrun stapler validate "$DMG"
 
+# 7. Sign the DMG with the Sparkle EdDSA key and generate / refresh
+# `appcast.xml` so the in-app updater (Sparkle 2) can serve this version.
+SPARKLE_VERSION="2.9.1"
+SPARKLE_TOOLS="$ROOT/.sparkle-tools"
+if [ ! -x "$SPARKLE_TOOLS/bin/sign_update" ]; then
+  echo "→ Fetching Sparkle $SPARKLE_VERSION tools (one-time setup)"
+  mkdir -p "$SPARKLE_TOOLS"
+  curl -fsSL "https://github.com/sparkle-project/Sparkle/releases/download/$SPARKLE_VERSION/Sparkle-$SPARKLE_VERSION.tar.xz" \
+    | tar -xJ -C "$SPARKLE_TOOLS"
+fi
+
+echo "→ Signing $DMG with Sparkle EdDSA key"
+SPARKLE_SIG_LINE=$("$SPARKLE_TOOLS/bin/sign_update" --account "MarkdownViewer" "$DMG")
+
+DMG_LENGTH=$(stat -f%z "$DMG")
+
+echo "→ Writing $ROOT/appcast.xml"
+PUB_DATE=$(date -R)
+cat > "$ROOT/appcast.xml" <<APPCAST
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>MarkdownViewer</title>
+    <link>https://raw.githubusercontent.com/vincentlauriat/MarkdownViewer/main/appcast.xml</link>
+    <description>MarkdownViewer release feed</description>
+    <language>en</language>
+    <item>
+      <title>v$VERSION</title>
+      <pubDate>$PUB_DATE</pubDate>
+      <sparkle:version>$VERSION</sparkle:version>
+      <sparkle:shortVersionString>$VERSION</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+      <sparkle:releaseNotesLink>https://github.com/vincentlauriat/MarkdownViewer/releases/tag/v$VERSION</sparkle:releaseNotesLink>
+      <enclosure
+        url="https://github.com/vincentlauriat/MarkdownViewer/releases/download/v$VERSION/MarkdownViewer-$VERSION.dmg"
+        length="$DMG_LENGTH"
+        type="application/octet-stream"
+        $SPARKLE_SIG_LINE />
+    </item>
+  </channel>
+</rss>
+APPCAST
+
 DMG_SIZE=$(ls -lh "$DMG" | awk '{print $5}')
 echo ""
-echo "✅ Built, signed, notarized and stapled: $DMG ($DMG_SIZE)"
+echo "✅ Built, signed, notarized, stapled and Sparkle-signed: $DMG ($DMG_SIZE)"
+echo "✅ appcast.xml written for v$VERSION"
 echo ""
 echo "Next steps to publish on GitHub:"
-echo "  gh release create v$VERSION ./MarkdownViewer-$VERSION.dmg --generate-notes"
+echo "  1. gh release create v$VERSION ./MarkdownViewer-$VERSION.dmg --title \"v$VERSION\" --notes-file release-notes-$VERSION.md"
+echo "  2. git add appcast.xml && git commit -m 'docs: appcast for v$VERSION' && git push"
 echo ""
-echo "Or with custom notes:"
-echo "  gh release create v$VERSION ./MarkdownViewer-$VERSION.dmg \\"
-echo "      --title \"v$VERSION\" \\"
-echo "      --notes-file release-notes-$VERSION.md"
+echo "After both, Sparkle clients on older versions will be offered the update on next check."

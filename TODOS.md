@@ -70,9 +70,20 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 - [ ] **Migration future vers Sparkle** : remplacer UpdateChecker, ajouter Sparkle SwiftPM, générer paire EdDSA, configurer `SUFeedURL` + `SUPublicEDKey` dans Info.plist, pipeline release avec `generate_appcast` + notarization Apple Developer ID — **différé**
 - [ ] **iOS / iPadOS** : pas applicable hors App Store / TestFlight — feature macOS uniquement
 
-## v0.5 — Polish éditeur (en cours, 2026-05-03)
+## v0.5 — Polish éditeur (livré 2026-05-04)
 
 - [x] Numéros de ligne dans une marge gauche (gutter) sur le `MarkdownEditor`, modes Source + Split, **macOS uniquement** — `NSRulerView` sous-classée, ~170 lignes Swift, spec : `docs/superpowers/specs/2026-05-03-line-numbers-gutter-design.md`. Validé visuellement par Vincent le 2026-05-04 sur `sample-long.md` (541 lignes, transition 2→3 digits, soft-wrap, mode Source + Split, dark/light, undo)
+- [x] **Notarized release pipeline (v0.5.1)** — Developer ID + Hardened Runtime + notarytool submit + stapler staple dans `Scripts/release.sh`. Plus de "right-click → Open" Gatekeeper sur les versions notarized.
+
+## v0.6 — Auto-update Sparkle + Help/What's New/About internes (livré 2026-05-04)
+
+- [x] **Sparkle 2** intégré via SwiftPM — remplace le `UpdateChecker` maison. UI moderne, Install-and-Relaunch one-click, EdDSA signature en plus de la notarization Apple. `appcast.xml` hébergé dans `main` (raw.githubusercontent.com).
+- [x] **Fenêtre Help interne** (`⌘?`) — fetch README depuis GitHub raw, rendu via le `WebView` existant, bouton "View README on GitHub".
+- [x] **Fenêtre What's New interne** — fetch `/releases` via API GitHub, concat des release notes, rendu via WebView, bouton "View all releases on GitHub".
+- [x] **Fenêtre About custom** — `CommandGroup(replacing: .appInfo)` + `AboutWindowView` avec icon, version, description, bouton "View on GitHub", copyright. `windowResizability(.contentSize)`.
+- [x] **`Scripts/release.sh`** étendu — auto-fetch Sparkle CLI tools, sign chaque sub-binary de `Sparkle.framework` (Autoupdate + 2 XPC + Updater.app + framework), génère `appcast.xml` automatiquement.
+- [x] **`UpdateChecker.swift` supprimé** — Sparkle prend tout en charge.
+- [x] **Bug fix** — stack overflow dans `HelpWindows.swift` causé par une extension `View.footer` qui wrappait `self`. Refactorisé en `FooterBar` sibling struct.
 
 ## Backlog (post-v3)
 

@@ -1,12 +1,18 @@
 import SwiftUI
 
+#if os(macOS)
+import Sparkle
+#endif
+
 @main
 struct MarkdownViewerApp: App {
-    init() {
-        #if os(macOS)
-        UpdateChecker.checkOnLaunchIfNeeded()
-        #endif
-    }
+    #if os(macOS)
+    private let updaterController = SPUStandardUpdaterController(
+        startingUpdater: true,
+        updaterDelegate: nil,
+        userDriverDelegate: nil
+    )
+    #endif
 
     var body: some Scene {
         DocumentGroup(newDocument: MarkdownDocument()) { file in
@@ -36,17 +42,64 @@ struct MarkdownViewerApp: App {
             }
 
             #if os(macOS)
+            CommandGroup(replacing: .appInfo) {
+                AboutMenuButton()
+            }
             CommandGroup(after: .appInfo) {
-                Button("Check for Updates…") { UpdateChecker.checkFromMenu() }
+                Button("Check for Updates…") {
+                    updaterController.checkForUpdates(nil)
+                }
+            }
+            CommandGroup(replacing: .help) {
+                HelpMenuButton()
+                WhatsNewMenuButton()
             }
             #endif
         }
+
+        #if os(macOS)
+        Window("About MarkdownViewer", id: "about") {
+            AboutWindowView()
+        }
+        .windowResizability(.contentSize)
+
+        Window("MarkdownViewer Help", id: "help") {
+            HelpWindowView()
+        }
+        Window("What's New", id: "whats-new") {
+            WhatsNewWindowView()
+        }
+        #endif
     }
 
     private func post(_ name: Notification.Name) {
         NotificationCenter.default.post(name: name, object: nil)
     }
 }
+
+#if os(macOS)
+private struct AboutMenuButton: View {
+    @Environment(\.openWindow) private var openWindow
+    var body: some View {
+        Button("About MarkdownViewer") { openWindow(id: "about") }
+    }
+}
+
+private struct HelpMenuButton: View {
+    @Environment(\.openWindow) private var openWindow
+    var body: some View {
+        Button("MarkdownViewer Help") { openWindow(id: "help") }
+            .keyboardShortcut("?", modifiers: .command)
+    }
+}
+
+private struct WhatsNewMenuButton: View {
+    @Environment(\.openWindow) private var openWindow
+    var body: some View {
+        Button("What's New…") { openWindow(id: "whats-new") }
+    }
+}
+#endif
 
 extension Notification.Name {
     static let reloadActiveDocument = Notification.Name("MarkdownViewer.reloadActiveDocument")

@@ -36,3 +36,6 @@ CHANGES.md
 MEMORY.md
 CLAUDE.md
 PLAN.md
+
+# Sparkle binaries fetched on-demand by Scripts/release.sh
+.sparkle-tools/

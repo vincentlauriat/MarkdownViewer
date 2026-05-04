@@ -40,16 +40,17 @@ It is a true native macOS document app — multi‑window, multi‑file, dark‑
 | ✏️ **Editor mode** | Toggle Preview / Split / Source via toolbar (`Cmd+/` cycles), syntax-highlighted `NSTextView`, native Cmd+S / dirty indicator / undo / redo |
 | 📐 **Line numbers gutter** | Native `NSRulerView` gutter on Source and Split modes — width grows with the document, soft-wrapped continuations are not numbered (Xcode / VS Code convention) |
 | 🏷️ **Frontmatter toggle** | Auto-detects YAML frontmatter (Obsidian / Tolaria / Jekyll) and lets you hide it (`⇧⌘Y`) for a cleaner read |
-| 🔄 **In-app updater** | Checks GitHub Releases on launch (debounced 7 days) and offers a `Check for Updates…` menu — semver-compared, ad-hoc-signed DMGs |
+| 🚀 **One-click auto-update** | Sparkle 2 + Apple-notarized DMGs + EdDSA signature — *Check for Updates…* downloads, swaps, and relaunches the new version automatically |
+| 📖 **In-app Help & What's New** | Help (`⌘?`) and *What's New…* fetch the live README and release notes from GitHub and render them through the same Markdown pipeline as documents |
 | 🔒 **Safe by default** | `markdown-it` HTML disabled, DOMPurify on top, all rendering offline (`file://`) |
 
 ## Install
 
 Grab the latest pre-built `.dmg` from the [GitHub Releases page](https://github.com/vincentlauriat/MarkdownViewer/releases/latest), mount it, and drag `MarkdownViewer.app` to `/Applications`.
 
-Releases from **v0.5.1** onwards are signed with an Apple Developer ID, built with the Hardened Runtime, and notarized + stapled by Apple — they launch by double-click without any Gatekeeper warning, even offline. Older versions (v0.3.0, v0.5.0) were ad-hoc signed and need a one-time right-click → **Open** on first launch.
+Releases from **v0.5.1** onwards are signed with an Apple Developer ID, built with the Hardened Runtime, and notarized + stapled by Apple — they launch by double-click without any Gatekeeper warning, even offline.
 
-Once installed, MarkdownViewer's built-in updater (added in v0.3.0) will prompt you when a new release is published.
+Once installed, **Sparkle** (added in v0.6.0) takes over: every future release is downloaded, signed-checked, swapped and relaunched automatically when you click *Install and Relaunch* in the *Check for Updates…* dialog. No more drag-and-drop into `/Applications`.
 
 ## Quick start (build from source)
 
@@ -198,6 +199,8 @@ The bundle is signed ad‑hoc (`CODE_SIGN_IDENTITY=-`) which is enough for perso
 - [x] **iPadOS / iOS scaffold (v0.3)** — second target with `UIViewRepresentable` wrappers, shared sources via `#if os(macOS|iOS)`, asset catalog extended with iOS marketing icon. Runtime smoke-test still pending an App Store distribution decision.
 - [x] **In-app updater (v0.4)** — GitHub Releases polling, semver-numeric compare, `Check for Updates…` menu, `Scripts/release.sh` to package signed DMGs
 - [x] **Line numbers gutter (v0.5)** — `NSRulerView` subclass on the source editor, soft-wrap-aware, dynamic width
+- [x] **Notarized releases (v0.5.1)** — Developer ID + Hardened Runtime + Apple notarization + stapler ticket
+- [x] **Sparkle 2 auto-update + in-app Help / What's New / About (v0.6)** — one-click install-and-relaunch, internal windows for README and release notes, custom About with View on GitHub button
 - [ ] **Quick Look extension** — preview in Finder with the spacebar
 - [ ] **Theme picker** — GitHub light / dark / sepia / custom
 - [ ] **Floating table of contents** — for long docs
