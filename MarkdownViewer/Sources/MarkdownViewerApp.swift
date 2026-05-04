@@ -7,11 +7,20 @@ import Sparkle
 @main
 struct MarkdownViewerApp: App {
     #if os(macOS)
-    private let updaterController = SPUStandardUpdaterController(
-        startingUpdater: true,
-        updaterDelegate: nil,
-        userDriverDelegate: nil
-    )
+    private let updaterController: SPUStandardUpdaterController = {
+        let controller = SPUStandardUpdaterController(
+            startingUpdater: true,
+            updaterDelegate: nil,
+            userDriverDelegate: nil
+        )
+        // Stay prompt-based: Sparkle may *check* in the background, but it
+        // must never download or install without user consent. Otherwise the
+        // user's running app gets SIGKILLed mid-session and, if the swap
+        // fails, restarted on the *old* version with no visible signal.
+        controller.updater.automaticallyChecksForUpdates = true
+        controller.updater.automaticallyDownloadsUpdates = false
+        return controller
+    }()
     #endif
 
     var body: some Scene {

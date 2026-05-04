@@ -43,7 +43,7 @@ targets:
       path: MarkdownViewer/Info.plist
       properties:
         CFBundleDisplayName: MarkdownViewer
-        CFBundleShortVersionString: "0.6.1"
+        CFBundleShortVersionString: "0.6.2"
         CFBundleVersion: "1"
         LSMinimumSystemVersion: "13.0"
         NSHighResolutionCapable: true
@@ -55,6 +55,7 @@ targets:
         SUPublicEDKey: "L4A+SGmQtBLMr+d6XqA/6B9NwY4c89azkDETg5W5xfo="
         SUEnableAutomaticChecks: true
         SUScheduledCheckInterval: 86400
+        SUAutomaticallyUpdate: false
         UTImportedTypeDeclarations:
           - UTTypeIdentifier: net.daringfireball.markdown
             UTTypeDescription: Markdown Document
@@ -82,7 +83,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.vincent.MarkdownViewer
         PRODUCT_NAME: MarkdownViewer
-        MARKETING_VERSION: "0.6.1"
+        MARKETING_VERSION: "0.6.2"
         CURRENT_PROJECT_VERSION: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
@@ -114,7 +115,7 @@ targets:
       path: MarkdownViewer/Info-iOS.plist
       properties:
         CFBundleDisplayName: MarkdownViewer
-        CFBundleShortVersionString: "0.6.1"
+        CFBundleShortVersionString: "0.6.2"
         CFBundleVersion: "1"
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
@@ -155,7 +156,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.vincent.MarkdownViewer
         PRODUCT_NAME: MarkdownViewer
-        MARKETING_VERSION: "0.6.1"
+        MARKETING_VERSION: "0.6.2"
         CURRENT_PROJECT_VERSION: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
