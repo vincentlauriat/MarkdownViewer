@@ -45,7 +45,9 @@ It is a true native macOS document app — multi‑window, multi‑file, dark‑
 
 ## Install
 
-Grab the latest pre-built `.dmg` from the [GitHub Releases page](https://github.com/vincentlauriat/MarkdownViewer/releases/latest), mount it, and drag `MarkdownViewer.app` to `/Applications`. The app is ad-hoc signed for personal distribution — on first launch right-click → **Open** to bypass Gatekeeper. Subsequent launches don't need this.
+Grab the latest pre-built `.dmg` from the [GitHub Releases page](https://github.com/vincentlauriat/MarkdownViewer/releases/latest), mount it, and drag `MarkdownViewer.app` to `/Applications`.
+
+Releases from **v0.5.1** onwards are signed with an Apple Developer ID, built with the Hardened Runtime, and notarized + stapled by Apple — they launch by double-click without any Gatekeeper warning, even offline. Older versions (v0.3.0, v0.5.0) were ad-hoc signed and need a one-time right-click → **Open** on first launch.
 
 Once installed, MarkdownViewer's built-in updater (added in v0.3.0) will prompt you when a new release is published.
 
