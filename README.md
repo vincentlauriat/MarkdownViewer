@@ -15,6 +15,7 @@ Double‑click a Markdown file. See it rendered. Edit it in your favourite edito
 </div>
 
 ---
+<img width="1376" height="768" alt="image" src="https://github.com/user-attachments/assets/2467ea41-1514-40d6-bab5-8affd9bacebe" />
 
 ## Why
 
@@ -76,6 +77,8 @@ After the first build, the app is automatically registered with `LaunchServices`
 3. Click **Change All…**
 
 From now on, double‑clicking any `.md` opens it in MarkdownViewer in a new window.
+
+<img width="1376" height="768" alt="image" src="https://github.com/user-attachments/assets/6fcb6453-2e02-428d-abe1-22e97903c876" />
 
 ## Architecture
 
