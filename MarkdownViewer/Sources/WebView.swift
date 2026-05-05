@@ -13,21 +13,28 @@ private let log = Logger(subsystem: "com.vincent.MarkdownViewer", category: "Web
 #if os(macOS)
 struct WebView: NSViewRepresentable {
     let markdown: String
+    var zoom: Double = 1.0
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
     func makeNSView(context: Context) -> WKWebView {
-        configureWebView(context: context)
+        let webView = configureWebView(context: context)
+        webView.pageZoom = CGFloat(zoom)
+        return webView
     }
 
     func updateNSView(_ webView: WKWebView, context: Context) {
         context.coordinator.documentMarkdown = markdown
         context.coordinator.flush()
+        if abs(webView.pageZoom - CGFloat(zoom)) > 0.001 {
+            webView.pageZoom = CGFloat(zoom)
+        }
     }
 }
 #elseif os(iOS)
 struct WebView: UIViewRepresentable {
     let markdown: String
+    var zoom: Double = 1.0  // ignoré sur iOS (WKWebView.pageZoom est macOS-only)
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 

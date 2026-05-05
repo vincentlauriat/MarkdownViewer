@@ -34,6 +34,15 @@ struct MarkdownViewerApp: App {
                 Divider()
                 Button("Toggle View Mode") { post(.toggleViewMode) }
                     .keyboardShortcut("/", modifiers: .command)
+                Divider()
+                Button("Zoom In") { post(.zoomIn) }
+                    .keyboardShortcut("+", modifiers: .command)
+                Button("Zoom Out") { post(.zoomOut) }
+                    .keyboardShortcut("-", modifiers: .command)
+                Button("Actual Size") { post(.zoomReset) }
+                    .keyboardShortcut("0", modifiers: .command)
+                Divider()
+                Button("Toggle Current-Line Highlight") { post(.toggleCurrentLineHighlight) }
             }
 
             CommandGroup(replacing: .printItem) {
@@ -119,4 +128,8 @@ extension Notification.Name {
     static let findPrevious = Notification.Name("MarkdownViewer.findPrevious")
     static let toggleViewMode = Notification.Name("MarkdownViewer.toggleViewMode")
     static let setFrontmatterVisibility = Notification.Name("MarkdownViewer.setFrontmatterVisibility")
+    static let zoomIn = Notification.Name("MarkdownViewer.zoomIn")
+    static let zoomOut = Notification.Name("MarkdownViewer.zoomOut")
+    static let zoomReset = Notification.Name("MarkdownViewer.zoomReset")
+    static let toggleCurrentLineHighlight = Notification.Name("MarkdownViewer.toggleCurrentLineHighlight")
 }

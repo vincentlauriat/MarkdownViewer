@@ -75,6 +75,12 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 - [x] Numéros de ligne dans une marge gauche (gutter) sur le `MarkdownEditor`, modes Source + Split, **macOS uniquement** — `NSRulerView` sous-classée, ~170 lignes Swift, spec : `docs/superpowers/specs/2026-05-03-line-numbers-gutter-design.md`. Validé visuellement par Vincent le 2026-05-04 sur `sample-long.md` (541 lignes, transition 2→3 digits, soft-wrap, mode Source + Split, dark/light, undo)
 - [x] **Notarized release pipeline (v0.5.1)** — Developer ID + Hardened Runtime + notarytool submit + stapler staple dans `Scripts/release.sh`. Plus de "right-click → Open" Gatekeeper sur les versions notarized.
 
+## v0.7 — Zoom + highlight ligne courante (livré 2026-05-05)
+
+- [x] **F — Zoom contenu** (`⌘+` / `⌘-` / `⌘0`) — `WKWebView.pageZoom` piloté par `@SceneStorage("zoomRatio")`, step 0.1, range [0.5, 3.0]. macOS only.
+- [x] **D — Highlight ligne courante dans le gutter** — `LineNumberRulerView` observe la sélection du `NSTextView`, dessine le numéro en bold + `controlAccentColor`. Toggle via menu + `@SceneStorage`.
+- [x] **G — Drag&drop `.md` sur l'icône Dock** — gratuit avec `DocumentGroup`, validé visuellement par Vincent au runtime (2026-05-05).
+
 ## v0.6 — Auto-update Sparkle + Help/What's New/About internes (livré 2026-05-04)
 
 - [x] **Sparkle 2** intégré via SwiftPM — remplace le `UpdateChecker` maison. UI moderne, Install-and-Relaunch one-click, EdDSA signature en plus de la notarization Apple. `appcast.xml` hébergé dans `main` (raw.githubusercontent.com).
@@ -90,8 +96,8 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 - [ ] Quick Look extension (preview Markdown dans Finder avec barre d'espace)
 - [ ] Sélecteur de thèmes CSS (GitHub light/dark, sépia, classique, custom)
 - [ ] Table of contents flottante / sidebar
-- [ ] Zoom contenu (Cmd +/-)
-- [ ] Drag & drop de `.md` sur l'icône Dock (gratuit avec DocumentGroup, à vérifier)
+- [x] Zoom contenu (Cmd +/-) — livré v0.7.0
+- [x] Drag & drop de `.md` sur l'icône Dock (gratuit avec DocumentGroup) — validé v0.7.0
 - [ ] Distribution App Store (signing + sandbox + review process)
 - [ ] Migrer highlight.js → Shiki si la qualité de coloration devient un problème
 - [x] Init repo git + premier commit + repo public GitHub : https://github.com/vincentlauriat/MarkdownViewer

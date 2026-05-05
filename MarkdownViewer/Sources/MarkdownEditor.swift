@@ -55,6 +55,7 @@ private enum Palette {
 #if os(macOS)
 struct MarkdownEditor: NSViewRepresentable {
     @Binding var text: String
+    var highlightCurrentLine: Bool = true
 
     func makeCoordinator() -> Coordinator { Coordinator(text: $text) }
 
@@ -86,6 +87,7 @@ struct MarkdownEditor: NSViewRepresentable {
         Highlighter.apply(to: textView.textStorage, baseFont: MarkdownEditor.baseFont)
 
         let ruler = LineNumberRulerView(textView: textView, scrollView: scroll)
+        ruler.highlightCurrentLine = highlightCurrentLine
         scroll.verticalRulerView = ruler
         scroll.hasVerticalRuler = true
         scroll.rulersVisible = true
@@ -96,6 +98,11 @@ struct MarkdownEditor: NSViewRepresentable {
 
     func updateNSView(_ scroll: NSScrollView, context: Context) {
         guard let textView = scroll.documentView as? NSTextView else { return }
+        if let ruler = context.coordinator.ruler,
+           ruler.highlightCurrentLine != highlightCurrentLine
+        {
+            ruler.highlightCurrentLine = highlightCurrentLine
+        }
         if textView.string != text {
             let selectedRanges = textView.selectedRanges
             textView.string = text
@@ -125,6 +132,7 @@ struct MarkdownEditor: NSViewRepresentable {
 #elseif os(iOS)
 struct MarkdownEditor: UIViewRepresentable {
     @Binding var text: String
+    var highlightCurrentLine: Bool = true  // ignoré sur iOS (pas de ruler view)
 
     func makeCoordinator() -> Coordinator { Coordinator(text: $text) }
 

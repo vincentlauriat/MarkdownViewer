@@ -39,6 +39,8 @@ It is a true native macOS document app — multi‑window, multi‑file, dark‑
 | 🖨️ **Print / Export PDF** | `Cmd+P` uses the native print dialog (the standard "Save as PDF" works) |
 | ✏️ **Editor mode** | Toggle Preview / Split / Source via toolbar (`Cmd+/` cycles), syntax-highlighted `NSTextView`, native Cmd+S / dirty indicator / undo / redo |
 | 📐 **Line numbers gutter** | Native `NSRulerView` gutter on Source and Split modes — width grows with the document, soft-wrapped continuations are not numbered (Xcode / VS Code convention) |
+| 🎯 **Current-line highlight** | The cursor's line number is rendered in bold + accent color in the gutter, follows the caret in real time. Toggle from *View* if you prefer it off |
+| 🔎 **Content zoom** | `⌘+` / `⌘-` / `⌘0` zoom the rendered preview (50 % → 300 %). Persisted per window, so each document keeps its own zoom level |
 | 🏷️ **Frontmatter toggle** | Auto-detects YAML frontmatter (Obsidian / Tolaria / Jekyll) and lets you hide it (`⇧⌘Y`) for a cleaner read |
 | 🚀 **One-click auto-update** | Sparkle 2 + Apple-notarized DMGs + EdDSA signature — *Check for Updates…* downloads, swaps, and relaunches the new version automatically |
 | 📖 **In-app Help & What's New** | Help (`⌘?`) and *What's New…* fetch the live README and release notes from GitHub and render them through the same Markdown pipeline as documents |
@@ -201,10 +203,10 @@ The bundle is signed ad‑hoc (`CODE_SIGN_IDENTITY=-`) which is enough for perso
 - [x] **Line numbers gutter (v0.5)** — `NSRulerView` subclass on the source editor, soft-wrap-aware, dynamic width
 - [x] **Notarized releases (v0.5.1)** — Developer ID + Hardened Runtime + Apple notarization + stapler ticket
 - [x] **Sparkle 2 auto-update + in-app Help / What's New / About (v0.6)** — one-click install-and-relaunch, internal windows for README and release notes, custom About with View on GitHub button
+- [x] **Content zoom + current-line highlight (v0.7)** — `⌘+` / `⌘-` / `⌘0` zooms the preview (per-window), the gutter highlights the cursor's line in bold + accent color
 - [ ] **Quick Look extension** — preview in Finder with the spacebar
 - [ ] **Theme picker** — GitHub light / dark / sepia / custom
 - [ ] **Floating table of contents** — for long docs
-- [ ] **Current-line highlight** in the gutter (toggleable)
 
 ## Contributing
 

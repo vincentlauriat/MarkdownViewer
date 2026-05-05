@@ -10,8 +10,16 @@ import AppKit
 final class LineNumberRulerView: NSRulerView {
     private weak var observedTextView: NSTextView?
     private var notificationTokens: [NSObjectProtocol] = []
+    private var currentLineNumber: Int = 1
+
+    var highlightCurrentLine: Bool = true {
+        didSet {
+            if oldValue != highlightCurrentLine { needsDisplay = true }
+        }
+    }
 
     private static let numberFont = NSFont.monospacedSystemFont(ofSize: 11, weight: .regular)
+    private static let highlightedFont = NSFont.monospacedSystemFont(ofSize: 11, weight: .semibold)
     private static let horizontalPadding: CGFloat = 12
     private static let trailingInset: CGFloat = 6
     private static let minimumThickness: CGFloat = 28
@@ -22,6 +30,7 @@ final class LineNumberRulerView: NSRulerView {
         clientView = textView
         ruleThickness = Self.minimumThickness
         recomputeThickness()
+        recomputeCurrentLine()
         registerObservers(textView: textView, scrollView: scrollView)
     }
 
@@ -44,6 +53,7 @@ final class LineNumberRulerView: NSRulerView {
             queue: .main
         ) { [weak self] _ in
             self?.recomputeThickness()
+            self?.recomputeCurrentLine()
             self?.needsDisplay = true
         })
 
@@ -63,6 +73,30 @@ final class LineNumberRulerView: NSRulerView {
         ) { [weak self] _ in
             self?.needsDisplay = true
         })
+
+        notificationTokens.append(center.addObserver(
+            forName: NSTextView.didChangeSelectionNotification,
+            object: textView,
+            queue: .main
+        ) { [weak self] _ in
+            self?.recomputeCurrentLine()
+        })
+    }
+
+    private func recomputeCurrentLine() {
+        guard let textView = observedTextView else { return }
+        let nsString = textView.string as NSString
+        let location = min(textView.selectedRange().location, nsString.length)
+        var line = 1
+        var i = 0
+        while i < location {
+            if nsString.character(at: i) == 0x0A { line += 1 }
+            i += 1
+        }
+        if currentLineNumber != line {
+            currentLineNumber = line
+            if highlightCurrentLine { needsDisplay = true }
+        }
     }
 
     private func recomputeThickness() {
@@ -154,8 +188,14 @@ final class LineNumberRulerView: NSRulerView {
                             atTextContainerY containerY: CGFloat,
                             textView: NSTextView,
                             attrs: [NSAttributedString.Key: Any]) {
+        let isCurrent = highlightCurrentLine && number == currentLineNumber
+        let drawAttrs: [NSAttributedString.Key: Any] = isCurrent ? [
+            .font: Self.highlightedFont,
+            .foregroundColor: NSColor.controlAccentColor
+        ] : attrs
+
         let label = "\(number)" as NSString
-        let size = label.size(withAttributes: attrs)
+        let size = label.size(withAttributes: drawAttrs)
         let inset = textView.textContainerInset
 
         let pointInTextView = NSPoint(x: 0, y: containerY + inset.height)
@@ -164,7 +204,7 @@ final class LineNumberRulerView: NSRulerView {
         let lineHeight = (textView.layoutManager?.defaultLineHeight(for: textView.font ?? Self.numberFont)) ?? size.height
         let y = pointInRuler.y + (lineHeight - size.height) / 2
         let x = bounds.maxX - size.width - Self.trailingInset
-        label.draw(at: NSPoint(x: x, y: y), withAttributes: attrs)
+        label.draw(at: NSPoint(x: x, y: y), withAttributes: drawAttrs)
     }
 }
 #endif
