@@ -82,24 +82,36 @@ STAGING="$STAGING_DIR/MarkdownViewer.app"
 echo "→ Staging to $STAGING_DIR"
 ditto --norsrc --noextattr --noacl "$APP" "$STAGING"
 
+# Apple's timestamp.apple.com is intermittently flaky — we've seen
+# "A timestamp was expected but was not found." mid-pipeline several times.
+# Retry up to 5 times with a short backoff before giving up.
+codesign_ts() {
+  local target="$1"
+  local attempt
+  for attempt in 1 2 3 4 5; do
+    if codesign --force --options runtime --timestamp --sign "$SIGNING_IDENTITY" "$target" 2>&1; then
+      return 0
+    fi
+    if [ "$attempt" -lt 5 ]; then
+      echo "  ↻ codesign failed (attempt $attempt/5), retrying in 5s…"
+      sleep 5
+    fi
+  done
+  echo "✗ codesign $target failed after 5 attempts" >&2
+  return 1
+}
+
 echo "→ Codesigning Sparkle.framework nested binaries (deepest first)"
 SPARKLE_FW="$STAGING/Contents/Frameworks/Sparkle.framework"
 SPARKLE_VER="$SPARKLE_FW/Versions/B"
-codesign --force --options runtime --timestamp --sign "$SIGNING_IDENTITY" \
-  "$SPARKLE_VER/Autoupdate"
-codesign --force --options runtime --timestamp --sign "$SIGNING_IDENTITY" \
-  "$SPARKLE_VER/XPCServices/Downloader.xpc"
-codesign --force --options runtime --timestamp --sign "$SIGNING_IDENTITY" \
-  "$SPARKLE_VER/XPCServices/Installer.xpc"
-codesign --force --options runtime --timestamp --sign "$SIGNING_IDENTITY" \
-  "$SPARKLE_VER/Updater.app"
-codesign --force --options runtime --timestamp --sign "$SIGNING_IDENTITY" \
-  "$SPARKLE_FW"
+codesign_ts "$SPARKLE_VER/Autoupdate"
+codesign_ts "$SPARKLE_VER/XPCServices/Downloader.xpc"
+codesign_ts "$SPARKLE_VER/XPCServices/Installer.xpc"
+codesign_ts "$SPARKLE_VER/Updater.app"
+codesign_ts "$SPARKLE_FW"
 
 echo "→ Codesigning the app itself with Developer ID + Hardened Runtime"
-codesign --force --options runtime --timestamp \
-  --sign "$SIGNING_IDENTITY" \
-  "$STAGING"
+codesign_ts "$STAGING"
 codesign --verify --strict --deep "$STAGING"
 
 DMG="$ROOT/MarkdownViewer-$VERSION.dmg"
@@ -182,7 +194,14 @@ echo "→ Signing $DMG with Sparkle EdDSA key"
 # (so we don't add `length=` ourselves on the <enclosure> — that would duplicate).
 SPARKLE_SIG_LINE=$("$SPARKLE_TOOLS/bin/sign_update" --account "MarkdownViewer" "$DMG")
 
-echo "→ Writing $ROOT/appcast.xml"
+# Sparkle compares <sparkle:version> against the running app's CFBundleVersion
+# (a monotonically increasing build number), NOT against the marketing version.
+# If we put "0.7.0" here while the installed app reports CFBundleVersion="1",
+# Sparkle's standard comparator sees [0,7,0] < [1] and concludes "up to date".
+# Read the actual CFBundleVersion baked into the .app and use that.
+BUILD_NUMBER=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$APP/Contents/Info.plist")
+
+echo "→ Writing $ROOT/appcast.xml (sparkle:version=$BUILD_NUMBER, shortVersionString=$VERSION)"
 PUB_DATE=$(date -R)
 cat > "$ROOT/appcast.xml" <<APPCAST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -195,7 +214,7 @@ cat > "$ROOT/appcast.xml" <<APPCAST
     <item>
       <title>v$VERSION</title>
       <pubDate>$PUB_DATE</pubDate>
-      <sparkle:version>$VERSION</sparkle:version>
+      <sparkle:version>$BUILD_NUMBER</sparkle:version>
       <sparkle:shortVersionString>$VERSION</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
       <sparkle:releaseNotesLink>https://github.com/vincentlauriat/MarkdownViewer/releases/tag/v$VERSION</sparkle:releaseNotesLink>

@@ -7,15 +7,15 @@
     <language>en</language>
     <item>
       <title>v0.7.0</title>
-      <pubDate>Tue, 05 May 2026 09:44:36 +0700</pubDate>
-      <sparkle:version>0.7.0</sparkle:version>
+      <pubDate>Tue, 05 May 2026 11:08:12 +0700</pubDate>
+      <sparkle:version>2</sparkle:version>
       <sparkle:shortVersionString>0.7.0</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
       <sparkle:releaseNotesLink>https://github.com/vincentlauriat/MarkdownViewer/releases/tag/v0.7.0</sparkle:releaseNotesLink>
       <enclosure
         url="https://github.com/vincentlauriat/MarkdownViewer/releases/download/v0.7.0/MarkdownViewer-0.7.0.dmg"
         type="application/octet-stream"
-        sparkle:edSignature="giPg7a0FY2J7fqGkciqeprgay+CjVXe8oUrfOq26vXvdu+OXnuA5XDFQYXImVLpRZuiyhPGESWBssztor+9/Bw==" length="3302444" />
+        sparkle:edSignature="WJ75f0MgCWU4fr6X9AMSbLWE+/iWFs3x5JhAJEDey5gU7boMZ71SiaWZ1m6cOOUbYnkWGxd7LteigqpzNpY8AQ==" length="3302481" />
     </item>
   </channel>
 </rss>

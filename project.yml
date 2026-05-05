@@ -44,7 +44,7 @@ targets:
       properties:
         CFBundleDisplayName: MarkdownViewer
         CFBundleShortVersionString: "0.7.0"
-        CFBundleVersion: "1"
+        CFBundleVersion: "2"
         LSMinimumSystemVersion: "13.0"
         NSHighResolutionCapable: true
         NSPrincipalClass: NSApplication
@@ -84,7 +84,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.vincent.MarkdownViewer
         PRODUCT_NAME: MarkdownViewer
         MARKETING_VERSION: "0.7.0"
-        CURRENT_PROJECT_VERSION: "1"
+        CURRENT_PROJECT_VERSION: "2"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         COMBINE_HIDPI_IMAGES: YES
@@ -116,7 +116,7 @@ targets:
       properties:
         CFBundleDisplayName: MarkdownViewer
         CFBundleShortVersionString: "0.7.0"
-        CFBundleVersion: "1"
+        CFBundleVersion: "2"
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
@@ -157,7 +157,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.vincent.MarkdownViewer
         PRODUCT_NAME: MarkdownViewer
         MARKETING_VERSION: "0.7.0"
-        CURRENT_PROJECT_VERSION: "1"
+        CURRENT_PROJECT_VERSION: "2"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         TARGETED_DEVICE_FAMILY: "1,2"   # iPhone + iPad
