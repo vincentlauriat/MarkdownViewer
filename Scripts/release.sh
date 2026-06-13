@@ -75,7 +75,7 @@ fi
 # "resource fork, Finder information, or similar detritus not allowed".
 # `ditto --noextattr` copies without xattrs and survives.
 SIGNING_IDENTITY="${SIGNING_IDENTITY:-Developer ID Application: Vincent LAURIAT (KFLACS69T9)}"
-NOTARY_PROFILE="${NOTARY_PROFILE:-MarkdownViewer-Notary}"
+NOTARY_PROFILE="${NOTARY_PROFILE:-AppliMacVincentGithub}"
 
 STAGING_DIR="$(mktemp -d)"
 STAGING="$STAGING_DIR/MarkdownViewer.app"
@@ -109,6 +109,13 @@ codesign_ts "$SPARKLE_VER/XPCServices/Downloader.xpc"
 codesign_ts "$SPARKLE_VER/XPCServices/Installer.xpc"
 codesign_ts "$SPARKLE_VER/Updater.app"
 codesign_ts "$SPARKLE_FW"
+
+echo "→ Codesigning MarkdownViewerQL.appex (if present)"
+APPEX="$STAGING/Contents/PlugIns/MarkdownViewerQL.appex"
+if [ -d "$APPEX" ]; then
+  codesign_ts "$APPEX/Contents/MacOS/MarkdownViewerQL"
+  codesign_ts "$APPEX"
+fi
 
 echo "→ Codesigning the app itself with Developer ID + Hardened Runtime"
 codesign_ts "$STAGING"

@@ -4,7 +4,7 @@ import AppKit
 
 private let readmeRawURL = URL(string: "https://raw.githubusercontent.com/vincentlauriat/MarkdownViewer/main/README.md")!
 private let readmePageURL = URL(string: "https://github.com/vincentlauriat/MarkdownViewer#readme")!
-private let releasesAPIURL = URL(string: "https://api.github.com/repos/vincentlauriat/MarkdownViewer/releases")!
+private let releasesAPIURL = URL(string: "https://api.github.com/repos/vincentlauriat/MarkdownViewer/releases/latest")!
 private let releasesPageURL = URL(string: "https://github.com/vincentlauriat/MarkdownViewer/releases")!
 private let repoPageURL = URL(string: "https://github.com/vincentlauriat/MarkdownViewer")!
 
@@ -107,15 +107,11 @@ struct WhatsNewWindowView: View {
         }
         do {
             let (data, _) = try await URLSession.shared.data(from: releasesAPIURL)
-            let releases = try JSONDecoder().decode([Release].self, from: data)
-            var md = "# What's New\n\n"
-            for release in releases {
-                let title = release.name ?? release.tagName
-                let date = String(release.publishedAt.prefix(10))
-                let body = (release.body?.isEmpty == false) ? release.body! : "_(no notes for this release)_"
-                md += "## \(title)\n\n_\(date)_\n\n\(body)\n\n---\n\n"
-            }
-            markdown = md
+            let release = try JSONDecoder().decode(Release.self, from: data)
+            let title = release.name ?? release.tagName
+            let date = String(release.publishedAt.prefix(10))
+            let body = (release.body?.isEmpty == false) ? release.body! : "_(no notes for this release)_"
+            markdown = "# \(title)\n\n_\(date)_\n\n\(body)"
             phase = .loaded
         } catch {
             phase = .failed(error.localizedDescription)

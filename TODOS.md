@@ -93,7 +93,7 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 
 ## Backlog (post-v3)
 
-- [ ] Quick Look extension (preview Markdown dans Finder avec barre d'espace)
+- [x] Quick Look extension (preview Markdown dans Finder avec barre d'espace) — livré v0.8.0, validé par Vincent en prod
 - [ ] Sélecteur de thèmes CSS (GitHub light/dark, sépia, classique, custom)
 - [ ] Table of contents flottante / sidebar
 - [x] Zoom contenu (Cmd +/-) — livré v0.7.0
