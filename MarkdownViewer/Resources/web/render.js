@@ -118,6 +118,7 @@
 
     window.setTheme = function (theme) {
         document.body.dataset.theme = theme;
+        document.documentElement.dataset.theme = theme;
         const dark = document.getElementById('hljs-dark');
         const light = document.getElementById('hljs-light');
         if (dark && light) {

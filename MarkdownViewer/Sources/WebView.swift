@@ -59,8 +59,24 @@ extension WebView {
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = context.coordinator
         #if os(macOS)
-        webView.setValue(false, forKey: "drawsBackground")
+        // --- Crash workaround (macOS 27.0 beta) ---
+        // CoreAnimation aborts during scroll with "Function image_rect_blit_frag_lph
+        // was not found in the library". The "_lph" variant is the half-float /
+        // extended-range (EDR / wide-gamut) image-blit shader, which is missing from
+        // QuartzCore's Metal library on this OS seed. Forcing the WebView layer to
+        // plain 8-bit sRGB contents (no EDR, no wide gamut) routes compositing to the
+        // 8-bit blit shader, which is present. The window colour space is also pinned
+        // to sRGB once the view is in a window (see Coordinator.pinSRGBColorSpace).
         webView.allowsBackForwardNavigationGestures = false
+        webView.layer?.contentsFormat = .RGBA8Uint
+        // Opaque layer (drawsBackground defaults to true); solid background comes from
+        // the page CSS, underPageBackgroundColor fills the overscroll area on-theme.
+        if #available(macOS 12.0, *) {
+            let isDark = NSApp?.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            webView.underPageBackgroundColor = isDark
+                ? NSColor(srgbRed: 13 / 255, green: 17 / 255, blue: 23 / 255, alpha: 1)
+                : .white
+        }
         #else
         webView.isOpaque = false
         webView.backgroundColor = .clear
@@ -120,6 +136,16 @@ extension WebView {
             }()
             let theme = isDark ? "dark" : "light"
             webView.evaluateJavaScript("window.setTheme && window.setTheme('\(theme)')", completionHandler: nil)
+            #if os(macOS)
+            // Match the opaque overscroll area to the page CSS background
+            // (#ffffff light / #0d1117 dark) so the rubber-band edge and any
+            // pre-paint frame stay on-theme.
+            if #available(macOS 12.0, *) {
+                webView.underPageBackgroundColor = isDark
+                    ? NSColor(srgbRed: 13 / 255, green: 17 / 255, blue: 23 / 255, alpha: 1)
+                    : .white
+            }
+            #endif
         }
 
         // MARK: - Notifications
@@ -177,8 +203,20 @@ extension WebView {
         }
 
         #if os(macOS)
+        // Pin the document window to plain sRGB so CoreAnimation never requests the
+        // half-float/EDR image-blit shader (image_rect_blit_frag_lph) that is missing
+        // from QuartzCore's Metal library on the macOS 27.0 beta seed and aborts the
+        // app during scroll. A markdown viewer has no need for EDR / wide gamut.
+        private var didPinColorSpace = false
+        private func pinSRGBColorSpace() {
+            guard !didPinColorSpace, let window = webView?.window else { return }
+            window.colorSpace = .sRGB
+            didPinColorSpace = true
+        }
+
         private func tryAttach(retriesLeft: Int) {
             guard let webView, fileWatcher == nil else { return }
+            pinSRGBColorSpace()
             if let url = webView.window?.representedURL {
                 log.info("attach: representedURL = \(url.lastPathComponent, privacy: .public)")
                 fileWatcher = FileWatcher(url: url) { [weak self] in

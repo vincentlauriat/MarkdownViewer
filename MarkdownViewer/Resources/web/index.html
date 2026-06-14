@@ -10,10 +10,16 @@
     <link rel="stylesheet" href="vendor/katex.min.css">
     <style>
         :root { color-scheme: light dark; }
+        /* Solid (opaque) backgrounds so the native WKWebView layer can be drawn
+           opaque — avoids the per-frame alpha-blended GPU blit during scroll that
+           triggered a CoreAnimation/Metal shader crash on some machines. */
         html, body {
             margin: 0;
             padding: 0;
-            background: transparent;
+            background: #ffffff;
+        }
+        html[data-theme="dark"], body[data-theme="dark"] {
+            background: #0d1117;
         }
         body {
             padding: 32px clamp(20px, 6vw, 64px);
