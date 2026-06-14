@@ -2,6 +2,23 @@
 # Build a Release MarkdownViewer.app, Developer ID sign with Hardened Runtime,
 # notarize via Apple, staple the ticket, and package it as a distributable .dmg.
 #
+# ┌──────────────────────────────────────────────────────────────────────────┐
+# │ SPARKLE SIGNING KEY — DO NOT REGENERATE                                    │
+# │                                                                            │
+# │ Updates are EdDSA-signed with the private key in the login keychain under  │
+# │ account "MarkdownViewer" (used by sign_update below). Its public half is   │
+# │ embedded in the app as SUPublicEDKey in project.yml:                       │
+# │     9PD2SBwLL4XoycyAGzaE+gO7ctuxSfuFMMajiZdXhXQ=                           │
+# │                                                                            │
+# │ NEVER run `generate_keys` again or import a new key into this account, and │
+# │ NEVER change SUPublicEDKey. Doing so makes every already-installed app     │
+# │ reject all future auto-updates (it happened once: the original key         │
+# │ L4A+SGmQtBLMr+d6XqA/6B9NwY4c89azkDETg5W5xfo= was overwritten and lost,     │
+# │ forcing a one-time manual re-download for everyone on ≤ v0.8.0). Back this │
+# │ key up (`generate_keys -x backup.txt --account MarkdownViewer`) somewhere  │
+# │ safe so it can never be lost again.                                        │
+# └──────────────────────────────────────────────────────────────────────────┘
+#
 # Usage: ./Scripts/release.sh <version>
 #   e.g. ./Scripts/release.sh 0.5.1
 #
