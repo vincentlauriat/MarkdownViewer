@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MarkdownViewer — Open any .md file instantly on macOS</title>
+<meta name="description" content="A fast, native macOS app that opens Markdown files from Finder in under 300 ms — GitHub-flavoured rendering, live reload, syntax highlighting, KaTeX math, Mermaid diagrams and a built-in editor. Free & open-source (MIT).">
+<meta property="og:title" content="MarkdownViewer">
+<meta property="og:description" content="Double-click a .md file. See it rendered in under 300 ms. Edit anywhere — it reloads on the fly. Native macOS, free & open-source.">
+<meta property="og:image" content="https://github.com/user-attachments/assets/6fcb6453-2e02-428d-abe1-22e97903c876">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230969da'/%3E%3Ctext x='50' y='68' font-size='56' font-family='-apple-system,Segoe UI,Roboto,sans-serif' font-weight='800' fill='white' text-anchor='middle'%3EM%3C/text%3E%3Cpath d='M70 30 l0 22 m-8 -8 l8 8 8 -8' stroke='white' stroke-width='5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#ffffff; --bg-soft:#f6f8fa; --panel:#ffffff; --line:#e4e8ee;
+    --ink:#1f2328; --muted:#5d6772; --faint:#8a929d;
+    --accent:#0969da; --accent-deep:#0a4fa8; --accent-soft:#ddf0ff; --ok:#1a7f37;
+    --code-bg:#0d1117; --code-line:#1d2531;
+    --maxw:1100px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,"Cascadia Code",monospace}
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:20;backdrop-filter:saturate(180%) blur(12px);background:rgba(255,255,255,.78);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:750;letter-spacing:-.2px}
+  .logo{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#0969da,#1f6feb);display:grid;place-items:center;color:#fff;font-weight:800;position:relative;box-shadow:0 4px 12px rgba(9,105,218,.3)}
+  .logo span{font-size:17px}
+  .nav-links{display:flex;gap:24px;align-items:center;color:var(--muted);font-size:14.5px}
+  .nav-links a:hover{color:var(--ink)}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:11px;font-weight:650;font-size:15px;transition:transform .12s ease,box-shadow .12s ease,background .12s}
+  .btn:hover{transform:translateY(-1px)}
+  .btn-primary{background:linear-gradient(135deg,#0969da,#1f6feb);color:#fff;box-shadow:0 6px 22px rgba(9,105,218,.32)}
+  .btn-primary:hover{box-shadow:0 10px 28px rgba(9,105,218,.42)}
+  .btn-ghost{border:1px solid var(--line);color:var(--ink);background:#fff}
+  .btn-ghost:hover{border-color:#c7cfda;background:var(--bg-soft)}
+  .btn-sm{padding:8px 15px;font-size:14px;border-radius:9px}
+
+  /* hero */
+  header{padding:78px 0 36px;background:
+    radial-gradient(820px 380px at 18% -8%,rgba(9,105,218,.10),transparent 62%),
+    linear-gradient(180deg,#fbfdff,#ffffff 70%)}
+  .hero-grid{display:grid;grid-template-columns:1.02fr 1fr;gap:48px;align-items:center}
+  .pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;color:var(--muted);padding:6px 13px;border-radius:999px;font-size:13px;margin-bottom:22px}
+  .pill b{color:var(--accent)}
+  h1{font-size:clamp(36px,5.4vw,58px);line-height:1.05;font-weight:820;letter-spacing:-1.6px}
+  h1 .grad{background:linear-gradient(120deg,#1f6feb,#0a4fa8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .sub{max-width:540px;margin:20px 0 0;font-size:clamp(16px,2vw,19px);color:var(--muted)}
+  .cta{display:flex;gap:13px;flex-wrap:wrap;margin:30px 0 14px}
+  .meta{color:var(--faint);font-size:13px;display:flex;flex-wrap:wrap;gap:6px 14px}
+  .meta b{color:var(--muted);font-weight:600}
+
+  /* signature window mock */
+  .winwrap{filter:drop-shadow(0 30px 60px rgba(16,32,64,.18))}
+  .win{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+  .titlebar{display:flex;align-items:center;gap:8px;padding:11px 14px;background:var(--bg-soft);border-bottom:1px solid var(--line)}
+  .dot{width:11px;height:11px;border-radius:50%}
+  .dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+  .titlebar .name{margin-left:8px;font-size:12.5px;color:var(--faint)}
+  .titlebar .name b{color:var(--muted);font-weight:600}
+  .split{display:grid;grid-template-columns:1fr 1fr;min-height:280px}
+  .src{background:var(--code-bg);color:#c9d1d9;padding:16px 14px;font:12.5px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;overflow:hidden}
+  .src .ln{color:#4b5563;-webkit-user-select:none;user-select:none;display:inline-block;width:18px;text-align:right;margin-right:12px}
+  .src .h{color:#79c0ff;font-weight:700}
+  .src .b{color:#ffa657}
+  .src .c{color:#7ee787}
+  .src .t{color:#d2a8ff}
+  .src .m{color:#ff7b72}
+  .rendered{padding:18px 18px;font-size:13.5px;overflow:hidden}
+  .rendered h3{font-size:18px;font-weight:750;letter-spacing:-.4px;border-bottom:1px solid var(--line);padding-bottom:7px;margin-bottom:10px}
+  .rendered p{color:#39414c;margin-bottom:10px}
+  .rendered .task{display:flex;align-items:center;gap:8px;color:#39414c;margin:3px 0}
+  .rendered .box{width:14px;height:14px;border:1.5px solid #c7cfda;border-radius:4px;flex:none}
+  .rendered .box.on{background:var(--accent);border-color:var(--accent);position:relative}
+  .rendered .box.on::after{content:"✓";color:#fff;font-size:10px;position:absolute;inset:0;display:grid;place-items:center}
+  .rendered pre{background:var(--bg-soft);border:1px solid var(--line);border-radius:8px;padding:9px 11px;font:12px/1.6 ui-monospace,Menlo,monospace;color:#0a4fa8;margin-top:6px}
+  .rendered .kw{color:#cf222e}.rendered .fn{color:#8250df}
+
+  /* sections */
+  section{padding:74px 0;border-top:1px solid var(--line)}
+  .eyebrow{color:var(--accent);font-weight:700;font-size:12.5px;letter-spacing:1.4px;text-transform:uppercase}
+  .center{text-align:center}
+  .center .eyebrow{display:block}
+  h2{font-size:clamp(27px,3.7vw,38px);font-weight:800;letter-spacing:-.7px;margin:9px 0 12px}
+  .lead{color:var(--muted);max-width:620px;font-size:17px}
+  .center .lead{margin-left:auto;margin-right:auto}
+  .num300{font-variant-numeric:tabular-nums}
+
+  .grid{display:grid;gap:16px;margin-top:42px}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;transition:border-color .15s,transform .15s,box-shadow .15s}
+  .card:hover{border-color:#cfe0f5;transform:translateY(-2px);box-shadow:0 12px 30px rgba(16,32,64,.07)}
+  .card h3{font-size:16.5px;margin-bottom:5px;letter-spacing:-.2px}
+  .card p{color:var(--muted);font-size:14.5px}
+  .ico{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent-deep);font-size:21px;margin-bottom:14px}
+
+  /* why / stats */
+  .why{background:var(--bg-soft);border-radius:18px;padding:40px;display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:center;margin-top:8px}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:18px}
+  .stat .k{font-size:28px;font-weight:820;letter-spacing:-1px;color:var(--accent-deep)}
+  .stat .v{color:var(--muted);font-size:13.5px;margin-top:2px}
+
+  /* gallery */
+  .gallery{display:grid;grid-template-columns:1fr;gap:18px;margin-top:42px}
+  .gallery figure{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 16px 40px rgba(16,32,64,.08)}
+  .gallery img{display:block;width:100%}
+  .gallery figcaption{color:var(--muted);font-size:13.5px;padding:12px 16px;border-top:1px solid var(--line)}
+  .gallery figcaption b{color:var(--ink)}
+
+  /* install */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:42px;counter-reset:s}
+  .step{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 22px 20px;position:relative}
+  .step::before{counter-increment:s;content:counter(s);position:absolute;top:-14px;left:22px;width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#0969da,#1f6feb);color:#fff;font-weight:800;display:grid;place-items:center;font-size:15px;box-shadow:0 5px 14px rgba(9,105,218,.3)}
+  .step h3{margin:6px 0 5px;font-size:16px}
+  .step p{color:var(--muted);font-size:14.5px}
+  .step code{background:var(--code-bg);color:#c9d1d9;border-radius:6px;padding:2px 7px;font:12.5px/1.4 ui-monospace,Menlo,monospace}
+
+  .final{text-align:center;background:
+    radial-gradient(620px 280px at 50% 120%,rgba(9,105,218,.12),transparent 66%)}
+  .final .cta{justify-content:center}
+
+  footer{border-top:1px solid var(--line);padding:34px 0;color:var(--muted);font-size:14px;text-align:center}
+  footer a{color:var(--accent);font-weight:600}
+
+  @media(max-width:880px){
+    .hero-grid{grid-template-columns:1fr;gap:34px}
+    .why{grid-template-columns:1fr;padding:28px}
+    .g3,.steps{grid-template-columns:1fr}
+    .g2{grid-template-columns:1fr}
+    .nav-links a:not(.btn){display:none}
+  }
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="brand" href="#top"><span class="logo"><span>M↓</span></span>MarkdownViewer</a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#why">Why</a>
+    <a href="#install">Install</a>
+    <a href="https://github.com/vincentlauriat/MarkdownViewer">GitHub</a>
+    <a class="btn btn-primary btn-sm" href="https://github.com/vincentlauriat/MarkdownViewer/releases/latest">Download</a>
+  </div>
+</div></nav>
+
+<header id="top"><div class="wrap">
+  <div class="hero-grid">
+    <div>
+      <span class="pill">⚡ Opens a <b>.md</b> in under <span class="mono num300">300&nbsp;ms</span></span>
+      <h1>Open any Markdown file<br><span class="grad">instantly on macOS.</span></h1>
+      <p class="sub">Double-click a <code class="mono">.md</code> in Finder and see it rendered the way GitHub does. Edit it in VS&nbsp;Code, vim or anything else — the preview reloads on the fly.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://github.com/vincentlauriat/MarkdownViewer/releases/latest">⬇︎ Download for macOS</a>
+        <a class="btn btn-ghost" href="https://github.com/vincentlauriat/MarkdownViewer">View on GitHub</a>
+      </div>
+      <p class="meta"><b>Free &amp; open-source (MIT)</b> · Signed &amp; notarized · macOS 13+ · Auto-updates</p>
+    </div>
+
+    <div class="winwrap">
+      <div class="win" role="img" aria-label="MarkdownViewer split view: Markdown source on the left, rendered output on the right">
+        <div class="titlebar">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="name"><b>README.md</b> — Split</span>
+        </div>
+        <div class="split">
+          <div class="src mono" aria-hidden="true">
+<span class="ln">1</span><span class="h"># Project</span><br>
+<span class="ln">2</span><br>
+<span class="ln">3</span>Fast and <span class="b">**native**</span>.<br>
+<span class="ln">4</span><br>
+<span class="ln">5</span><span class="m">- [x]</span> Live reload<br>
+<span class="ln">6</span><span class="m">- [ ]</span> Quick Look<br>
+<span class="ln">7</span><br>
+<span class="ln">8</span><span class="t">```swift</span><br>
+<span class="ln">9</span>let v = <span class="c">"Hi"</span><br>
+<span class="ln">10</span><span class="t">```</span>
+          </div>
+          <div class="rendered">
+            <h3>Project</h3>
+            <p>Fast and <strong>native</strong>.</p>
+            <div class="task"><span class="box on"></span> Live reload</div>
+            <div class="task"><span class="box"></span> Quick Look</div>
+            <pre class="mono"><span class="kw">let</span> v = <span style="color:#0a4fa8">"Hi"</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></header>
+
+<section id="features"><div class="wrap">
+  <div class="center">
+    <p class="eyebrow">## features</p>
+    <h2>Everything GitHub renders — natively, offline</h2>
+    <p class="lead">A true macOS document app: multi-window, Open&nbsp;Recent, dark-mode aware. The rich rendering you expect, with none of the Electron weight.</p>
+  </div>
+  <div class="grid g3">
+    <div class="card"><div class="ico">⚡</div><h3>Instant cold start</h3><p>A single SwiftUI scene with bundled web assets — no remote fetch on launch. Opens in under 300&nbsp;ms.</p></div>
+    <div class="card"><div class="ico">🔄</div><h3>Live reload</h3><p>Edit in any external editor; the preview updates in ≈130&nbsp;ms and handles atomic saves cleanly.</p></div>
+    <div class="card"><div class="ico">🎨</div><h3>GitHub-flavoured</h3><p><code class="mono">markdown-it</code> with GFM tables, task lists and the familiar github-markdown styling.</p></div>
+    <div class="card"><div class="ico">🌈</div><h3>Syntax highlighting</h3><p><code class="mono">highlight.js</code> with GitHub light &amp; dark themes for fenced code blocks.</p></div>
+    <div class="card"><div class="ico">🧮</div><h3>Math &amp; diagrams</h3><p>Inline and display math via KaTeX, plus Mermaid flowcharts, sequence and graph diagrams.</p></div>
+    <div class="card"><div class="ico">✏️</div><h3>Built-in editor</h3><p>Toggle Preview / Split / Source, with a syntax-highlighted source view, line-number gutter and native save.</p></div>
+    <div class="card"><div class="ico">🔍</div><h3>Find, zoom &amp; print</h3><p>Native <code class="mono">⌘F</code> search, <code class="mono">⌘±</code> content zoom (per-window), and <code class="mono">⌘P</code> print / Save&nbsp;as&nbsp;PDF.</p></div>
+    <div class="card"><div class="ico">🌗</div><h3>Dark mode</h3><p>Follows the system appearance automatically and keeps each window's zoom level.</p></div>
+    <div class="card"><div class="ico">🚀</div><h3>One-click updates</h3><p>Sparkle 2 + notarized DMGs + EdDSA signature — <em>Check for Updates…</em> downloads, swaps and relaunches.</p></div>
+  </div>
+</div></section>
+
+<section id="why"><div class="wrap">
+  <div class="why">
+    <div>
+      <p class="eyebrow">// why it exists</p>
+      <h2 style="text-align:left">Built for one job, done fast</h2>
+      <p class="lead">macOS ships no real Markdown previewer — TextEdit shows raw text, and Electron apps take seconds to launch. MarkdownViewer delegates to native APIs wherever possible and drops into JavaScript only for what <code class="mono">WKWebView</code> renders for free. The result: a featherweight document app that feels instant.</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="k">&lt;300 ms</div><div class="v">Cold start to rendered</div></div>
+      <div class="stat"><div class="k">≈130 ms</div><div class="v">Live-reload latency</div></div>
+      <div class="stat"><div class="k">~500</div><div class="v">Lines of Swift</div></div>
+      <div class="stat"><div class="k">100%</div><div class="v">Offline rendering (file://)</div></div>
+    </div>
+  </div>
+</div></section>
+
+<section id="screens"><div class="wrap">
+  <div class="center">
+    <p class="eyebrow">under the hood</p>
+    <h2>How it works</h2>
+    <p class="lead">A native SwiftUI + AppKit document app on top, the proven JavaScript Markdown pipeline bundled and rendered offline underneath. The best of both worlds.</p>
+  </div>
+  <div class="gallery">
+    <figure>
+      <img src="https://github.com/user-attachments/assets/6fcb6453-2e02-428d-abe1-22e97903c876" alt="MarkdownViewer architecture: from a Finder double-click through SwiftUI DocumentGroup to the bundled WKWebView rendering pipeline" loading="lazy">
+      <figcaption><b>From double-click to rendered</b> — Finder hands the file to a native <code class="mono">DocumentGroup</code>; a <code class="mono">WKWebView</code> renders it with markdown-it, highlight.js, KaTeX and Mermaid, all bundled and offline.</figcaption>
+    </figure>
+  </div>
+</div></section>
+
+<section id="install"><div class="wrap">
+  <div class="center">
+    <p class="eyebrow">get started</p>
+    <h2>Up and running in 30 seconds</h2>
+    <p class="lead">No App Store, no sign-in. Notarized by Apple — it launches by double-click, even offline.</p>
+  </div>
+  <div class="steps">
+    <div class="step"><h3>Download</h3><p>Grab the latest signed <code>.dmg</code> from GitHub Releases and mount it.</p></div>
+    <div class="step"><h3>Install</h3><p>Drag <code>MarkdownViewer.app</code> into <code>/Applications</code>. That's it.</p></div>
+    <div class="step"><h3>Set as default</h3><p>Right-click any <code>.md</code> → Get&nbsp;Info → Open&nbsp;with → <em>Change&nbsp;All…</em></p></div>
+  </div>
+</div></section>
+
+<section class="final"><div class="wrap">
+  <p class="eyebrow">ready?</p>
+  <h2>Make Markdown feel native</h2>
+  <p class="lead" style="margin:0 auto 6px">Free, open-source, and updated automatically. macOS 13 Ventura or later.</p>
+  <div class="cta">
+    <a class="btn btn-primary" href="https://github.com/vincentlauriat/MarkdownViewer/releases/latest">⬇︎ Download for macOS</a>
+    <a class="btn btn-ghost" href="https://github.com/vincentlauriat/MarkdownViewer#readme">Read the docs</a>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  MarkdownViewer · MIT License · © 2026 Vincent Lauriat ·
+  <a href="https://github.com/vincentlauriat/MarkdownViewer">github.com/vincentlauriat/MarkdownViewer</a>
+  · <a href="https://lauriat.fr/outils/markdownviewer/">lauriat.fr</a>
+</div></footer>
+
+</body>
+</html>

@@ -32,7 +32,8 @@ Package.resolved
 release-notes-*.md
 
 #Perso
-docs/
+docs/*
+!docs/index.html
 COMMANDS.md
 CHANGES.md
 MEMORY.md
