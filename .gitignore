@@ -27,7 +27,8 @@ Package.resolved
 # Logs
 *.log
 
-# Release artifacts
+# Release artifacts (DMGs + release notes, kept locally in release/)
+release/
 *.dmg
 release-notes-*.md
 

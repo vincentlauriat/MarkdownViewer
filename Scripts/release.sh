@@ -35,7 +35,8 @@
 #   SIGNING_IDENTITY="Developer ID Application: …"  ./Scripts/release.sh 0.5.1
 #   NOTARY_PROFILE="MarkdownViewer-Notary"          ./Scripts/release.sh 0.5.1
 #
-# Outputs MarkdownViewer-<version>.dmg at the repo root, fully notarized.
+# Outputs release/MarkdownViewer-<version>.dmg, fully notarized. Release notes
+# live in release/release-notes-<version>.md (write them before publishing).
 # Does NOT push to GitHub — prints the suggested `gh release create` command.
 
 set -euo pipefail
@@ -138,7 +139,9 @@ echo "→ Codesigning the app itself with Developer ID + Hardened Runtime"
 codesign_ts "$STAGING"
 codesign --verify --strict --deep "$STAGING"
 
-DMG="$ROOT/MarkdownViewer-$VERSION.dmg"
+RELEASE_DIR="$ROOT/release"
+mkdir -p "$RELEASE_DIR"
+DMG="$RELEASE_DIR/MarkdownViewer-$VERSION.dmg"
 rm -f "$DMG"
 
 # 5b. Build a friendly installer layout: signed .app on the left, /Applications
@@ -257,7 +260,7 @@ echo "✅ Built, signed, notarized, stapled and Sparkle-signed: $DMG ($DMG_SIZE)
 echo "✅ appcast.xml written for v$VERSION"
 echo ""
 echo "Next steps to publish on GitHub:"
-echo "  1. gh release create v$VERSION ./MarkdownViewer-$VERSION.dmg --title \"v$VERSION\" --notes-file release-notes-$VERSION.md"
+echo "  1. gh release create v$VERSION ./release/MarkdownViewer-$VERSION.dmg --title \"v$VERSION\" --notes-file release/release-notes-$VERSION.md"
 echo "  2. git add appcast.xml && git commit -m 'docs: appcast for v$VERSION' && git push"
 echo ""
 echo "After both, Sparkle clients on older versions will be offered the update on next check."
