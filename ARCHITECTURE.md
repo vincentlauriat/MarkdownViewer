@@ -115,6 +115,13 @@ MarkdownViewer/Resources/
     ├── index.html            — page hôte
     ├── render.js             — pipeline markdown-it + highlight.js + KaTeX + Mermaid + frontmatter
     └── vendor/               — libs tierces épinglées (téléchargées par Scripts/fetch-vendor.sh)
+
+MarkdownViewerQL/                — extension Quick Look (macOS, v0.8)
+├── Sources/
+│   └── PreviewViewController.swift — QLPreviewingController + WKWebView, réutilise
+│                                     le même pipeline web/ bundlé que l'app
+└── MarkdownViewerQL.entitlements  — app-sandbox + read-only user-selected
+                                     (seule cible sandboxée)
 ```
 
 ## Flux de données
@@ -164,12 +171,13 @@ MarkdownViewer/Resources/
 6. Le Coordinator garde un `weak ruler` pour que `updateNSView` puisse appeler `ruler?.needsDisplay = true` quand le texte est remplacé depuis l'extérieur (live-reload).
 
 ### Auto-update via Sparkle 2 (v0.6, macOS uniquement)
-1. `MarkdownViewerApp` instancie un `SPUStandardUpdaterController(startingUpdater: true, …)`. Sparkle commence à poller au démarrage et selon un schedule de 24h (`SUEnableAutomaticChecks` + `SUScheduledCheckInterval: 86400` dans `Info.plist`).
+1. `MarkdownViewerApp` instancie un `SPUStandardUpdaterController(startingUpdater: true, …)`. Sparkle commence à poller au démarrage et selon un schedule de 24h (`SUEnableAutomaticChecks` + `SUScheduledCheckInterval: 86400` dans `Info.plist`). Depuis v0.6.2, Sparkle **ne télécharge jamais silencieusement** : `automaticallyDownloadsUpdates = false` (plus `SUAutomaticallyUpdate: false` en garde-fou plist) — l'utilisateur voit toujours un prompt avant tout download/install. Introduit après qu'un install silencieux en arrière-plan contre notre DMG à layout custom a échoué et tué l'app en cours d'usage.
 2. Sparkle lit `SUFeedURL` depuis `Info.plist` (= `https://raw.githubusercontent.com/vincentlauriat/MarkdownViewer/main/appcast.xml`) et télécharge l'appcast.
 3. Chaque item de l'appcast est signé avec une signature EdDSA (attribut `sparkle:edSignature` sur `<enclosure>`). Sparkle vérifie la signature contre la clé publique embarquée dans `Info.plist` (`SUPublicEDKey`) avant d'accepter une mise à jour — en plus des vérifications Apple Developer ID + notarization.
-4. Si l'appcast liste une `<sparkle:version>` plus haute que le `CFBundleShortVersionString` courant, l'UI Sparkle propose **Install and Relaunch** / **Remind Me Later** / **Skip This Version**. À l'install, Sparkle télécharge le DMG, le monte, valide la signature, swap le `.app` courant, et relance la nouvelle version — entièrement automatique, sans drag-and-drop utilisateur.
+4. Si l'appcast liste une `<sparkle:version>` plus haute que le **`CFBundleVersion`** de l'app courante (un build number entier, bumpé à chaque release — *pas* la version marketing ; depuis v0.7 `release.sh` lit le vrai build number via PlistBuddy, suite à un bug de comparaison où `0.7.0` était jugée plus ancienne que le build `1`), l'UI Sparkle propose **Install and Relaunch** / **Remind Me Later** / **Skip This Version**. À l'install, Sparkle télécharge le DMG, le monte, valide la signature, swap le `.app` courant, et relance la nouvelle version — entièrement automatique, sans drag-and-drop utilisateur.
 5. L'entrée menu **MarkdownViewer → Check for Updates…** appelle `updaterController.checkForUpdates(nil)` qui force un check non-silent (affiche un résultat même si l'app est à jour).
 6. Le pipeline qui produit les DMG publiés est `Scripts/release.sh <version>`. Après notarization Apple + stapling, il auto-fetch le `sign_update` de Sparkle 2 (caché dans `.sparkle-tools/`, gitignored), utilise la clé privée EdDSA depuis le keychain macOS (account "MarkdownViewer", générée une fois via `generate_keys`) pour signer le DMG, puis écrit / écrase le `appcast.xml` à la racine du repo avec la nouvelle entrée. Le script imprime les deux commandes suggérées (`gh release create` + `git add appcast.xml && commit && push`) — il ne push jamais tout seul.
+7. **La paire EdDSA ne doit jamais être régénérée.** La clé publique est embarquée dans chaque `Info.plist` livré ; régénérer la paire casse silencieusement l'auto-update pour toutes les installs existantes (elles rejettent la nouvelle signature). C'est arrivé une fois : la clé d'origine (v0.6 → v0.8.0) a été écrasée sans backup, forçant une rotation assumée avec v0.8.1 — les utilisateurs ≤ v0.8.0 ont dû télécharger cette release manuellement. La clé publique active est `9PD2SBwLL4XoycyAGzaE+gO7ctuxSfuFMMajiZdXhXQ=` ; `release.sh` porte un bloc d'avertissement « DO NOT REGENERATE », et la clé privée doit être exportée une fois (`generate_keys -x`) vers un backup hors keychain.
 
 ### Zoom du contenu et highlight de la ligne courante (v0.7, macOS uniquement)
 1. **Zoom** — `ContentView` détient `@SceneStorage("zoomRatio")` (Double, défaut 1.0). `Cmd+` / `Cmd-` / `Cmd0` postent `.zoomIn` / `.zoomOut` / `.zoomReset` ; les receivers SwiftUI clampent la valeur dans `[0.5, 3.0]` avec un step de 0.1 et la persistent dans la scene storage. `WebView` déclare `var zoom: Double = 1.0` ; `updateNSView` applique `webView.pageZoom = CGFloat(zoom)` uniquement quand la valeur a changé (évite un relayout inutile). Sur iOS la prop existe mais est ignorée — `WKWebView.pageZoom` est macOS-only.
@@ -178,7 +186,7 @@ MarkdownViewer/Resources/
 
 ### Fenêtres internes Help / What's New / About (v0.6, macOS uniquement)
 1. **Help** (`⌘?`) — `HelpWindowView` fetch `https://raw.githubusercontent.com/vincentlauriat/MarkdownViewer/main/README.md` via URLSession, puis injecte le markdown dans le même pipeline `WebView` que les documents. Un bouton footer ouvre la page README sur GitHub dans Safari.
-2. **What's New** — `WhatsNewWindowView` interroge `https://api.github.com/repos/vincentlauriat/MarkdownViewer/releases`, décode le JSON, et concatène les `body` markdown de chaque release dans un seul document avec headers `## tag_name` + date, rendu de la même façon.
+2. **What's New** — `WhatsNewWindowView` interroge `https://api.github.com/repos/vincentlauriat/MarkdownViewer/releases/latest` (depuis v0.8 : objet release unique au lieu de la liste complète), et rend un seul bloc markdown `# titre` + date + body de la même façon. Le lien « View all releases on GitHub » du footer donne accès à l'historique complet.
 3. **About** — `AboutWindowView` remplace le panel About SwiftUI standard via `CommandGroup(replacing: .appInfo)`. Affiche l'icône (96×96), le nom, version + build (lus depuis `CFBundleShortVersionString` et `CFBundleVersion`), description, bouton **View on GitHub**, et copyright. `windowResizability(.contentSize)` empêche le resize, mimicking le panel About système.
 4. Les trois fenêtres sont exposées via des scenes SwiftUI `Window` avec des `id` stables (`"about"`, `"help"`, `"whats-new"`) ; les menu items utilisent `@Environment(\.openWindow)` pour les ouvrir.
 5. **Piège évité** : une extension `View` qui wrappait `self` dans son body causait une récursion infinie (`KERN_PROTECTION_FAILURE` stack overflow). Toujours utiliser une sub-view sibling (ici `FooterBar`), pas une extension qui ré-émet la calling view.
@@ -190,6 +198,17 @@ MarkdownViewer/Resources/
 4. Le bouton est `.disabled(!hasFrontmatter)` — Swift parse les premières lignes pour `---` … `---` afin que l'UI reste cohérente sans round-trip JS
 5. L'état de visibilité est ré-appliqué à chaque `flush()` du `WebView.Coordinator`, donc le live-reload n'efface pas le toggle
 6. `highlight.js` est invoqué explicitement sur le bloc YAML `<code class="language-yaml">` (le callback `highlight` de markdown-it ne se déclenche que sur les fences Markdown parsées, pas sur le HTML qu'on injecte nous-mêmes)
+
+### Extension Quick Look (v0.8, macOS uniquement)
+1. `MarkdownViewerQL` est une cible app-extension (extension point `com.apple.quicklook-preview`) embarquée dans `MarkdownViewer.app/Contents/PlugIns/` — `embed: true, link: false` dans `project.yml`.
+2. `PreviewViewController: QLPreviewingController` reçoit l'URL du fichier depuis Quick Look, lit le markdown, charge le **même dossier `web/` bundlé** (compilé dans le bundle propre de l'extension) dans un `WKWebView`, et injecte `window.renderMarkdown(...)` exactement comme le main app — la preview barre d'espace bénéficie gratuitement de la coloration, KaTeX, Mermaid et du dark mode.
+3. `QLSupportedContentTypes: [net.daringfireball.markdown]`. Contrairement au main app, l'extension **est sandboxée** (entitlements `app-sandbox` + `files.user-selected.read-only`) — requis pour les process d'extension.
+4. `release.sh` signe le `.appex` en Developer ID avant de signer l'app hôte. La validation runtime exige une vraie identité de signature : en ad-hoc, le process d'extension crashe à l'enregistrement XPC (team ID nil), donc Quick Look ne fonctionne que sur les builds signés Developer ID.
+
+### Workaround crash CoreAnimation half-float (v0.8.1, macOS uniquement)
+1. **Symptôme** : `SIGABRT` côté système dans QuartzCore pendant le scroll d'un document (surtout visible en mode Split) sur Apple Silicon M4 — `Function image_rect_blit_frag_lph was not found in the library`. La fonction manquante est le variant **half-float / EDR** du shader de blit de CoreAnimation ; reproduit sur macOS 26.5.1 (release) et 27.0 (beta). Aucune frame MarkdownViewer dans la pile fautive : le défaut est dans l'OS (remonté à Apple, voir `docs/apple-feedback-coreanimation-crash.md`).
+2. **Mitigation couche 1 — WebView opaque** : `drawsBackground=false` retiré, `underPageBackgroundColor` posé selon le thème, et `index.html` utilise des fonds solides thématisés (`#ffffff` / `#0d1117`) pour que le compositing utilise un blit copie simple au lieu de l'alpha blending.
+3. **Mitigation couche 2 — épinglage sRGB 8-bit** (celle qui a marché) : `pinSRGBColorSpace()` pose `window.colorSpace = .sRGB` et le `contentsFormat = .RGBA8Uint` de la layer, routant CoreAnimation vers les shaders 8-bit standard qui existent. Inconvénient : la fenêtre rend sans wide-gamut/EDR — sans importance pour un lecteur markdown.
 
 ### Print / Export PDF
 1. `Cmd+P` (commande menu) poste `.printActiveDocument`
@@ -205,3 +224,5 @@ MarkdownViewer/Resources/
 - **`resources:` dans XcodeGen** : il n'y a *pas* de clé top-level `resources:`. Les ressources vont dans `sources:` avec `buildPhase: resources`. Mal configurer ça produit un `.app` sans `Contents/Resources/` (sans erreur).
 - **Swift 6 concurrency + `NotificationCenter`** : la closure passée à `addObserver` n'hérite *pas* du `@MainActor` du contexte appelant. Le helper `observe(_:action:)` type son paramètre `@escaping @MainActor @Sendable (Notification) -> Void` pour que l'inférence se propage aux call sites sans `@MainActor in` partout.
 - **`actool` thinning sur Xcode 26** : produit un `AppIcon.icns` à 4 tailles seulement. Workaround : `postCompileScripts` dans `project.yml` qui rebuild le `.icns` via `iconutil` après `actool`. Voir `Scripts/make-icon.swift` pour la génération source.
+- **Code partagé avec l'extension QL par copie, pas par module** : `encodeForJS`, la logique de thème et le chargement du bundle web sont dupliqués entre `WebView.swift` et `PreviewViewController.swift`, et le dossier `web/` entier est compilé dans les deux bundles. Acceptable à la taille actuelle ; un framework/package partagé se justifiera si un troisième consommateur apparaît.
+- **`sparkle:version` = `CFBundleVersion`** : Sparkle compare des build numbers, pas des versions marketing. Chaque release doit bumper `CFBundleVersion` (entier) dans `project.yml` sur les trois cibles, sinon les installs plus anciennes se croiront à jour.

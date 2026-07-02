@@ -26,7 +26,7 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 ### Polish v1
 - [x] App icon — "M↓" indigo squircle, généré par `Scripts/make-icon.swift` (10 tailles + Contents.json)
 - [ ] Test sur fichiers de stress : README de gros repos, fichier de 1 Mo, doc avec 100 images
-- [ ] Vérifier signing minimal (Developer ID ou self-signed pour usage perso)
+- [x] Vérifier signing minimal — dépassé : releases signées Developer ID + Hardened Runtime + notarized depuis v0.5.1
 - [x] Test runtime : ouvrir sample.md, vérifier rendu (math, code highlight, mermaid, dark mode) — validé visuellement « c'est super propre »
 - [x] NSLog → `os.Logger` avec subsystem `com.vincent.MarkdownViewer` (observabilité fiable via `log show`)
 - [x] Build Release + install dans `/Applications/MarkdownViewer.app` (4,4 Mo)
@@ -57,18 +57,16 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 
 - [x] Détection + toggle du YAML frontmatter (Obsidian / Tolaria / Jekyll) — bouton 🏷️ dans la toolbar, raccourci `⇧⌘Y`, persisté via `@SceneStorage`, désactivé si pas de frontmatter
 
-## v4 — Auto-update (macOS, depuis GitHub Releases)
+## v4 — Auto-update (macOS, depuis GitHub Releases) — livré puis remplacé par Sparkle en v0.6
 
 - [x] **Choix mécanisme** : version maison (URLSession + GitHub Releases API), Sparkle reporté à plus tard si le projet grandit
-- [ ] `Sources/UpdateChecker.swift` (macOS-only via `#if os(macOS)`) : fetch `https://api.github.com/repos/vincentlauriat/MarkdownViewer/releases/latest`, compare `tag_name` vs `CFBundleShortVersionString`, prompt NSAlert "Download" / "Later" si maj dispo
-- [ ] Comparaison semver **numérique** (split sur `.` puis compare entiers) — pas la compare lexicographique de String, sinon "1.10" < "1.9"
-- [ ] Auto-check au lancement avec debounce 7 jours via `UserDefaults` (`lastUpdateCheck`)
-- [ ] Menu "Check for Updates…" après `.appInfo` (CommandGroup) — déclenche le même check en mode "non-silent" (montre "you're up to date" si rien)
-- [ ] Bump `MARKETING_VERSION` macOS de `0.1.0` → `0.3.0` dans `project.yml` (alignement avec iOS, sinon premier check trigger une fausse maj)
-- [x] Pipeline release : **`Scripts/release.sh <version>`** (build Release + ad-hoc codesign via staging dir avec `ditto --noextattr` pour contourner le `com.apple.provenance` xattr de macOS Sequoia + DMG via `hdiutil`). Imprime la commande `gh release create` à exécuter ensuite.
-- [x] **Premier release `v0.3.0` publié** sur GitHub : https://github.com/vincentlauriat/MarkdownViewer/releases/tag/v0.3.0 (DMG 2,49 Mo, ad-hoc signé). API `releases/latest` renvoie bien la release.
-- [ ] **Migration future vers Sparkle** : remplacer UpdateChecker, ajouter Sparkle SwiftPM, générer paire EdDSA, configurer `SUFeedURL` + `SUPublicEDKey` dans Info.plist, pipeline release avec `generate_appcast` + notarization Apple Developer ID — **différé**
-- [ ] **iOS / iPadOS** : pas applicable hors App Store / TestFlight — feature macOS uniquement
+- [x] `Sources/UpdateChecker.swift` (macOS-only) : fetch `releases/latest`, compare semver numérique, NSAlert Download/Later/Skip — **supprimé en v0.6, remplacé par Sparkle**
+- [x] Auto-check au lancement avec debounce 7 jours + menu "Check for Updates…" (non-silent)
+- [x] Bump `MARKETING_VERSION` macOS `0.1.0` → `0.3.0` dans `project.yml`
+- [x] Pipeline release : **`Scripts/release.sh <version>`** (build Release + codesign via staging dir `ditto --noextattr` + DMG via `hdiutil`). Imprime la commande `gh release create` à exécuter ensuite.
+- [x] **Premier release `v0.3.0` publié** sur GitHub : https://github.com/vincentlauriat/MarkdownViewer/releases/tag/v0.3.0
+- [x] **Migration vers Sparkle** — faite en v0.6.0 (Sparkle 2.9.1 SwiftPM, paire EdDSA, `SUFeedURL` + `SUPublicEDKey`, appcast généré par `release.sh`)
+- [-] **iOS / iPadOS** : pas applicable hors App Store / TestFlight — feature macOS uniquement
 
 ## v0.5 — Polish éditeur (livré 2026-05-04)
 
@@ -91,6 +89,15 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 - [x] **`UpdateChecker.swift` supprimé** — Sparkle prend tout en charge.
 - [x] **Bug fix** — stack overflow dans `HelpWindows.swift` causé par une extension `View.footer` qui wrappait `self`. Refactorisé en `FooterBar` sibling struct.
 
+## v0.8 — Quick Look + robustesse (livré : v0.8.0 le 2026-05-05, v0.8.1 le 2026-06-14)
+
+- [x] **Quick Look extension** (`MarkdownViewerQL`) — preview Finder barre d'espace, même pipeline web, sandbox read-only, validé en prod sur release Developer ID
+- [x] **What's New épuré** — endpoint `/releases/latest`, un seul bloc de notes au lieu de tout l'historique
+- [x] **Workaround crash CoreAnimation/Metal (v0.8.1)** — fenêtre épinglée sRGB 8-bit (`window.colorSpace = .sRGB` + `contentsFormat = .RGBA8Uint`) + WebView opaque, contourne les shaders half-float manquants sur M4 (macOS 26.5.1 / 27.0 beta). Validé au scroll par Vincent.
+- [ ] **Soumettre le rapport de bug à Apple** via Feedback Assistant (`docs/apple-feedback-coreanimation-crash.md` + 5 `.ips` dans `docs/crash-reports/`)
+- [x] **Rotation clé Sparkle assumée** — clé `9PD2` officielle, warning DO NOT REGENERATE dans `release.sh`, note « update manuel une fois » dans les release notes v0.8.1
+- [ ] **Backup de la clé privée Sparkle** hors keychain (`generate_keys -x backup.txt --account MarkdownViewer`, à stocker dans un gestionnaire de mots de passe)
+
 ## Backlog (post-v3)
 
 - [x] Quick Look extension (preview Markdown dans Finder avec barre d'espace) — livré v0.8.0, validé par Vincent en prod
@@ -103,3 +110,14 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 - [x] Init repo git + premier commit + repo public GitHub : https://github.com/vincentlauriat/MarkdownViewer
 - [x] README anglais top qualité (badges, archi diagram, tech stack, roadmap, contributing)
 - [x] LICENSE MIT
+
+## Dette technique & qualité (identifiée le 2026-07-02)
+
+- [ ] Supprimer les projets périmés `MarkdownViewer 2.xcodeproj` / `MarkdownViewer 3.xcodeproj` (régénérations XcodeGen sans la cible QL)
+- [ ] Premiers tests automatisés (cibles faciles : `Highlighter` regex, extraction frontmatter, comparaison de versions, `FileWatcher`)
+- [ ] Factoriser le code dupliqué app ↔ extension QL (`encodeForJS`, `applyTheme`, chargement du bundle web) dans un petit module partagé
+- [ ] Désactiver `developerExtrasEnabled` (KVC privé) dans les builds Release
+- [ ] Supprimer le code mort `ViewMode.cycled()` (ContentView réimplémente le cycle en inline)
+- [ ] Centraliser les couleurs de thème (`#0d1117` dupliqué Swift + CSS) et les URLs GitHub hardcodées
+- [ ] Remonter les erreurs `evaluateJavaScript` / échecs Mermaid-KaTeX dans `os.Logger` au lieu de les avaler
+- [ ] CI GitHub Actions (build Debug macOS + iOS Simulator à chaque push)
