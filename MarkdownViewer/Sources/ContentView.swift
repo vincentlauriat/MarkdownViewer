@@ -14,14 +14,7 @@ struct ContentView: View {
     private static let zoomMax: Double = 3.0
 
     private var hasFrontmatter: Bool {
-        let trimmed = document.text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmed.hasPrefix("---") else { return false }
-        let lines = document.text.components(separatedBy: "\n")
-        guard lines.first?.trimmingCharacters(in: .whitespaces) == "---" else { return false }
-        for line in lines.dropFirst() {
-            if line.trimmingCharacters(in: .whitespaces) == "---" { return true }
-        }
-        return false
+        WebPipeline.hasFrontmatter(document.text)
     }
 
     /// Sur iPhone le mode Split n'a pas de sens (largeur insuffisante) — on le filtre.

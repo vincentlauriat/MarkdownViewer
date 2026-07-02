@@ -18,7 +18,7 @@
                     return '<pre><code class="hljs language-' + lang + '">' +
                         hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
                         '</code></pre>';
-                } catch (_) { /* fall through */ }
+                } catch (err) { console.error('highlight failed:', err); /* fall through */ }
             }
             return '<pre><code class="hljs">' + md.utils.escapeHtml(str) + '</code></pre>';
         }
@@ -51,7 +51,7 @@
             code.parentElement.replaceWith(wrapper);
         });
         if (target.querySelectorAll('.mermaid').length) {
-            mermaid.run({ querySelector: '#content .mermaid' }).catch(function () { /* ignore */ });
+            mermaid.run({ querySelector: '#content .mermaid' }).catch(function (err) { console.error('mermaid render failed:', err); });
         }
     }
 

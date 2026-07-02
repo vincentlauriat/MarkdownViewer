@@ -172,6 +172,7 @@ targets:
     platform: macOS
     sources:
       - path: MarkdownViewerQL/Sources
+      - path: MarkdownViewer/Sources/Shared
       - path: MarkdownViewer/Resources/web
         type: folder
         buildPhase: resources
@@ -194,3 +195,40 @@ targets:
         PRODUCT_NAME: MarkdownViewerQL
         MACOSX_DEPLOYMENT_TARGET: "13.0"
         CODE_SIGN_ENTITLEMENTS: MarkdownViewerQL/MarkdownViewerQL.entitlements
+
+  MarkdownViewerTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: MarkdownViewerTests
+    dependencies:
+      - target: MarkdownViewer
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.vincent.MarkdownViewer.Tests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/MarkdownViewer.app/Contents/MacOS/MarkdownViewer"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+
+schemes:
+  MarkdownViewer:
+    build:
+      targets:
+        MarkdownViewer: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - MarkdownViewerTests
+    archive:
+      config: Release
+
+  MarkdownViewerIOS:
+    build:
+      targets:
+        MarkdownViewerIOS: all
+    run:
+      config: Debug
+    archive:
+      config: Release

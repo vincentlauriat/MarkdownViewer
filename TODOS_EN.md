@@ -72,12 +72,14 @@ Legend: `[ ]` to do · `[~]` in progress · `[x]` done · `[-]` cancelled
 - [ ] App Store distribution (signing + sandbox + review process)
 - [ ] Migrate `highlight.js` → Shiki if syntax-highlighting quality becomes a bottleneck
 
-## Tech debt & quality (identified 2026-07-02)
+## Tech debt & quality (identified 2026-07-02, foundation shipped 2026-07-02)
 
-- [ ] First automated tests (easy targets: `Highlighter` regexes, frontmatter extraction, `FileWatcher`)
-- [ ] Deduplicate code shared between the app and the QL extension (`encodeForJS`, theme application, web-bundle loading)
-- [ ] Disable `developerExtrasEnabled` (private KVC) in Release builds
-- [ ] Remove dead code (`ViewMode.cycled()`)
-- [ ] Centralise theme colors (`#0d1117` duplicated in Swift + CSS) and hardcoded GitHub URLs
-- [ ] Surface `evaluateJavaScript` / Mermaid / KaTeX errors through `os.Logger` instead of swallowing them
-- [ ] CI on GitHub Actions (Debug build, macOS + iOS Simulator, on every push)
+- [x] First automated tests — `MarkdownViewerTests` target (hosted), 25 tests across 3 suites: `WebPipelineTests`, `HighlighterTests`, `FileWatcherTests`
+- [x] Deduplicate code shared between the app and the QL extension — `Sources/Shared/WebPipeline.swift`, compiled into all three targets
+- [x] Disable `developerExtrasEnabled` (private KVC) outside Debug builds
+- [x] Remove dead code (`ViewMode.cycled()` — would also have been wrong on iPhone)
+- [x] Centralise the dark background color on the Swift side (`WebPipeline.darkBackground`)
+- [ ] Centralise hardcoded GitHub URLs (HelpWindows + release.sh)
+- [x] Surface `evaluateJavaScript` errors through `os.Logger` (app + QL) and `console.error` in render.js catches
+- [x] Drop the private `drawsBackground` KVC in the QL extension (aligned with the crash workaround)
+- [x] CI on GitHub Actions — `.github/workflows/ci.yml`: build + tests on macOS, iOS Simulator build

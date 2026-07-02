@@ -1,6 +1,9 @@
 import Cocoa
+import os
 import Quartz
 import WebKit
+
+private let log = Logger(subsystem: "com.vincent.MarkdownViewer.QL", category: "Preview")
 
 class PreviewViewController: NSViewController, QLPreviewingController, WKNavigationDelegate {
 
@@ -14,7 +17,6 @@ class PreviewViewController: NSViewController, QLPreviewingController, WKNavigat
     override func loadView() {
         webView = WKWebView(frame: .zero)
         webView.navigationDelegate = self
-        webView.setValue(false, forKey: "drawsBackground")
         view = webView
 
         guard let webRoot = Bundle.main.resourceURL?.appendingPathComponent("web") else { return }
@@ -54,18 +56,20 @@ class PreviewViewController: NSViewController, QLPreviewingController, WKNavigat
     private func applyTheme() {
         let isDark = view.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
         let theme = isDark ? "dark" : "light"
-        webView.evaluateJavaScript("window.setTheme && window.setTheme('\(theme)')", completionHandler: nil)
+        webView.evaluateJavaScript("window.setTheme && window.setTheme('\(theme)')") { _, error in
+            if let error {
+                log.error("setTheme failed: \(error.localizedDescription, privacy: .public)")
+            }
+        }
     }
 
     private func render(_ markdown: String, completion: @escaping (Error?) -> Void) {
-        let payload = encodeForJS(markdown)
-        webView.evaluateJavaScript("window.renderMarkdown(\(payload))") { _, _ in completion(nil) }
-    }
-
-    private func encodeForJS(_ str: String) -> String {
-        guard let data = try? JSONSerialization.data(withJSONObject: str, options: [.fragmentsAllowed]),
-              let result = String(data: data, encoding: .utf8)
-        else { return "\"\"" }
-        return result
+        let payload = WebPipeline.encodeForJS(markdown)
+        webView.evaluateJavaScript("window.renderMarkdown(\(payload))") { _, error in
+            if let error {
+                log.error("renderMarkdown failed: \(error.localizedDescription, privacy: .public)")
+            }
+            completion(nil)
+        }
     }
 }
