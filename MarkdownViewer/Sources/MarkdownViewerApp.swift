@@ -1,12 +1,15 @@
 import SwiftUI
 
 #if os(macOS)
+import AppKit
 import Sparkle
 #endif
 
 @main
 struct MarkdownViewerApp: App {
     #if os(macOS)
+    private let colorSpacePinner = WindowColorSpacePinner()
+
     private let updaterController: SPUStandardUpdaterController = {
         let controller = SPUStandardUpdaterController(
             startingUpdater: true,
@@ -96,6 +99,40 @@ struct MarkdownViewerApp: App {
 }
 
 #if os(macOS)
+/// Pins every window of the app to plain sRGB as soon as it becomes key.
+///
+/// Workaround for the missing half-float CoreAnimation shaders on macOS 26.5 / 27
+/// (see the matching per-WebView pinning in WebView.swift and
+/// docs/apple-feedback-coreanimation-crash.md). The WebView-level pinning covered
+/// the scroll-blit path, but on macOS 27 beta 26A5368g the same missing-shader
+/// abort came back through a tone-mapped CG image draw (`CA::CG::fill_image`)
+/// that can run for any window, before and outside the WebView pinning. A
+/// markdown viewer has no need for EDR / wide gamut anywhere, so pinning every
+/// window is free.
+@MainActor
+final class WindowColorSpacePinner {
+    private var token: NSObjectProtocol?
+
+    init() {
+        token = NotificationCenter.default.addObserver(
+            forName: NSWindow.didBecomeKeyNotification,
+            object: nil,
+            queue: .main
+        ) { note in
+            Task { @MainActor in
+                guard let window = note.object as? NSWindow, window.colorSpace != .sRGB else { return }
+                window.colorSpace = .sRGB
+            }
+        }
+    }
+
+    deinit {
+        if let token {
+            NotificationCenter.default.removeObserver(token)
+        }
+    }
+}
+
 private struct AboutMenuButton: View {
     @Environment(\.openWindow) private var openWindow
     var body: some View {
