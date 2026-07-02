@@ -96,7 +96,7 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 - [x] **Workaround crash CoreAnimation/Metal (v0.8.1)** — fenêtre épinglée sRGB 8-bit (`window.colorSpace = .sRGB` + `contentsFormat = .RGBA8Uint`) + WebView opaque, contourne les shaders half-float manquants sur M4 (macOS 26.5.1 / 27.0 beta). Validé au scroll par Vincent.
 - [ ] **Soumettre le rapport de bug à Apple** via Feedback Assistant (`docs/apple-feedback-coreanimation-crash.md` + 5 `.ips` dans `docs/crash-reports/`)
 - [x] **Rotation clé Sparkle assumée** — clé `9PD2` officielle, warning DO NOT REGENERATE dans `release.sh`, note « update manuel une fois » dans les release notes v0.8.1
-- [ ] **Backup de la clé privée Sparkle** hors keychain (`generate_keys -x backup.txt --account MarkdownViewer`, à stocker dans un gestionnaire de mots de passe)
+- [x] **Backup de la clé privée Sparkle** hors keychain — fait le 2026-07-02, intégrité vérifiée par signature comparée (emplacement documenté dans MEMORY.md ; reste à le copier dans un gestionnaire de mots de passe)
 
 ## Backlog (post-v3)
 
