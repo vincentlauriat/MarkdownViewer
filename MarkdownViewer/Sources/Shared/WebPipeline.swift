@@ -33,5 +33,9 @@ enum WebPipeline {
     /// Dark page background — must match the CSS in `web/index.html`
     /// (`html[data-theme="dark"] { background: #0d1117 }`).
     static let darkBackground = NSColor(srgbRed: 13 / 255, green: 17 / 255, blue: 23 / 255, alpha: 1)
+
+    /// Sepia page background — must match the CSS in `web/index.html`
+    /// (`html[data-theme="sepia"] { background: #f4ecd8 }`).
+    static let sepiaBackground = NSColor(srgbRed: 244 / 255, green: 236 / 255, blue: 216 / 255, alpha: 1)
     #endif
 }

@@ -67,7 +67,7 @@ Legend: `[ ]` to do · `[~]` in progress · `[x]` done · `[-]` cancelled
 
 ## Backlog
 
-- [ ] CSS theme picker (GitHub light/dark, sepia, classic, custom)
+- [x] Theme picker (Auto / GitHub Light / GitHub Dark / Sepia) — shipped 2026-07-02: 🎨 toolbar menu, persisted per window, forced via the web view's appearance, sepia palette through CSS custom properties. Future: user-defined themes.
 - [ ] Floating / sidebar table of contents
 - [ ] App Store distribution (signing + sandbox + review process)
 - [ ] Migrate `highlight.js` → Shiki if syntax-highlighting quality becomes a bottleneck

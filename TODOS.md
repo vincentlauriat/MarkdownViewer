@@ -101,7 +101,7 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 ## Backlog (post-v3)
 
 - [x] Quick Look extension (preview Markdown dans Finder avec barre d'espace) — livré v0.8.0, validé par Vincent en prod
-- [ ] Sélecteur de thèmes CSS (GitHub light/dark, sépia, classique, custom)
+- [x] Sélecteur de thèmes (Auto / GitHub Light / GitHub Dark / Sépia) — livré le 2026-07-02 (branch `feat/theme-picker`) : menu 🎨 toolbar, persisté par fenêtre, thème forcé via appearance de la WKWebView, palette sépia via custom properties CSS. Extension future : thèmes custom utilisateur.
 - [ ] Table of contents flottante / sidebar
 - [x] Zoom contenu (Cmd +/-) — livré v0.7.0
 - [x] Drag & drop de `.md` sur l'icône Dock (gratuit avec DocumentGroup) — validé v0.7.0

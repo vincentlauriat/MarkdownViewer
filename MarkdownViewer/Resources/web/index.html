@@ -21,6 +21,21 @@
         html[data-theme="dark"], body[data-theme="dark"] {
             background: #0d1117;
         }
+        html[data-theme="sepia"], body[data-theme="sepia"] {
+            background: #f4ecd8;
+        }
+        /* Sepia palette: light GitHub theme re-tinted through the
+           github-markdown.css custom properties. */
+        body[data-theme="sepia"] .markdown-body {
+            color-scheme: light;
+            --fgColor-default: #5b4636;
+            --fgColor-muted: #8a7a63;
+            --fgColor-accent: #9a5b2d;
+            --bgColor-muted: rgba(91, 70, 54, 0.07);
+            --bgColor-neutral-muted: rgba(91, 70, 54, 0.12);
+            --borderColor-default: #dccbaa;
+            --borderColor-muted: #e5d8bd;
+        }
         body {
             padding: 32px clamp(20px, 6vw, 64px);
             font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
@@ -52,6 +67,11 @@
             border-left-color: #555;
             background: rgba(255, 255, 255, 0.04);
             color: #aaa;
+        }
+        body[data-theme="sepia"] .frontmatter {
+            border-left-color: #b09a72;
+            background: rgba(91, 70, 54, 0.06);
+            color: #7a6a52;
         }
         .frontmatter pre {
             margin: 0;
