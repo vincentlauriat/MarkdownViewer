@@ -6,6 +6,7 @@ struct ContentView: View {
     @SceneStorage("showFrontmatter") private var showFrontmatter: Bool = false
     @SceneStorage("zoomRatio") private var zoomRatio: Double = 1.0
     @SceneStorage("highlightCurrentLine") private var highlightCurrentLine: Bool = true
+    @SceneStorage("renderTheme") private var renderThemeRaw: String = RenderTheme.auto.rawValue
     @State private var findQuery: String = ""
     @State private var showFind: Bool = false
 
@@ -15,6 +16,10 @@ struct ContentView: View {
 
     private var hasFrontmatter: Bool {
         WebPipeline.hasFrontmatter(document.text)
+    }
+
+    private var renderTheme: RenderTheme {
+        RenderTheme(rawValue: renderThemeRaw) ?? .auto
     }
 
     /// Sur iPhone le mode Split n'a pas de sens (largeur insuffisante) — on le filtre.
@@ -84,7 +89,7 @@ struct ContentView: View {
     private var content: some View {
         switch viewMode {
         case .preview:
-            WebView(markdown: document.text, zoom: zoomRatio)
+            WebView(markdown: document.text, zoom: zoomRatio, theme: renderTheme)
         case .code:
             MarkdownEditor(text: $document.text, highlightCurrentLine: highlightCurrentLine)
         case .split:
@@ -92,7 +97,7 @@ struct ContentView: View {
             HSplitView {
                 MarkdownEditor(text: $document.text, highlightCurrentLine: highlightCurrentLine)
                     .frame(minWidth: 240)
-                WebView(markdown: document.text, zoom: zoomRatio)
+                WebView(markdown: document.text, zoom: zoomRatio, theme: renderTheme)
                     .frame(minWidth: 240)
             }
             #else
@@ -100,7 +105,7 @@ struct ContentView: View {
             HStack(spacing: 0) {
                 MarkdownEditor(text: $document.text, highlightCurrentLine: highlightCurrentLine)
                 Divider()
-                WebView(markdown: document.text, zoom: zoomRatio)
+                WebView(markdown: document.text, zoom: zoomRatio, theme: renderTheme)
             }
             #endif
         }
@@ -118,6 +123,20 @@ struct ContentView: View {
             }
             .pickerStyle(.segmented)
             .frame(width: CGFloat(availableModes.count) * 50)
+        }
+        ToolbarItem(placement: .primaryAction) {
+            Menu {
+                Picker("Theme", selection: $renderThemeRaw) {
+                    ForEach(RenderTheme.allCases) { theme in
+                        Text(theme.label).tag(theme.rawValue)
+                    }
+                }
+                .pickerStyle(.inline)
+            } label: {
+                Image(systemName: renderTheme == .auto ? "paintpalette" : "paintpalette.fill")
+            }
+            .help("Preview theme")
+            .disabled(viewMode == .code)
         }
         ToolbarItem(placement: .primaryAction) {
             Button {

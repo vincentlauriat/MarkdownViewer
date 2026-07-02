@@ -14,10 +14,12 @@ private let log = Logger(subsystem: "com.vincent.MarkdownViewer", category: "Web
 struct WebView: NSViewRepresentable {
     let markdown: String
     var zoom: Double = 1.0
+    var theme: RenderTheme = .auto
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
     func makeNSView(context: Context) -> WKWebView {
+        context.coordinator.themeOverride = theme
         let webView = configureWebView(context: context)
         webView.pageZoom = CGFloat(zoom)
         return webView
@@ -25,6 +27,9 @@ struct WebView: NSViewRepresentable {
 
     func updateNSView(_ webView: WKWebView, context: Context) {
         context.coordinator.documentMarkdown = markdown
+        if context.coordinator.themeOverride != theme {
+            context.coordinator.setThemeOverride(theme)
+        }
         context.coordinator.flush()
         if abs(webView.pageZoom - CGFloat(zoom)) > 0.001 {
             webView.pageZoom = CGFloat(zoom)
@@ -35,15 +40,20 @@ struct WebView: NSViewRepresentable {
 struct WebView: UIViewRepresentable {
     let markdown: String
     var zoom: Double = 1.0  // ignoré sur iOS (WKWebView.pageZoom est macOS-only)
+    var theme: RenderTheme = .auto
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
     func makeUIView(context: Context) -> WKWebView {
-        configureWebView(context: context)
+        context.coordinator.themeOverride = theme
+        return configureWebView(context: context)
     }
 
     func updateUIView(_ webView: WKWebView, context: Context) {
         context.coordinator.documentMarkdown = markdown
+        if context.coordinator.themeOverride != theme {
+            context.coordinator.setThemeOverride(theme)
+        }
         context.coordinator.flush()
     }
 }
@@ -103,6 +113,7 @@ extension WebView {
     final class Coordinator: NSObject, WKNavigationDelegate {
         weak var webView: WKWebView?
         var documentMarkdown: String = ""
+        var themeOverride: RenderTheme = .auto
         private var liveMarkdown: String?
         private var bundleReady = false
         var lastFrontmatterVisible: Bool = false
@@ -124,16 +135,37 @@ extension WebView {
             #endif
         }
 
+        func setThemeOverride(_ theme: RenderTheme) {
+            themeOverride = theme
+            applyTheme()
+        }
+
         private func applyTheme() {
             guard bundleReady, let webView else { return }
-            let isDark: Bool = {
+            // Force the view appearance for non-auto themes so the CSS
+            // prefers-color-scheme media queries (github-markdown.css
+            // palettes) agree with the requested theme.
+            #if os(macOS)
+            if let forceDark = themeOverride.forcesDarkAppearance {
+                webView.appearance = NSAppearance(named: forceDark ? .darkAqua : .aqua)
+            } else {
+                webView.appearance = nil
+            }
+            #elseif os(iOS)
+            if let forceDark = themeOverride.forcesDarkAppearance {
+                webView.overrideUserInterfaceStyle = forceDark ? .dark : .light
+            } else {
+                webView.overrideUserInterfaceStyle = .unspecified
+            }
+            #endif
+            let systemIsDark: Bool = {
                 #if os(macOS)
                 return NSApp?.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
                 #elseif os(iOS)
                 return webView.traitCollection.userInterfaceStyle == .dark
                 #endif
             }()
-            let theme = isDark ? "dark" : "light"
+            let theme = themeOverride.cssName(systemIsDark: systemIsDark)
             webView.evaluateJavaScript("window.setTheme && window.setTheme('\(theme)')") { _, error in
                 if let error {
                     log.error("setTheme failed: \(error.localizedDescription, privacy: .public)")
@@ -141,10 +173,14 @@ extension WebView {
             }
             #if os(macOS)
             // Match the opaque overscroll area to the page CSS background
-            // (#ffffff light / #0d1117 dark) so the rubber-band edge and any
-            // pre-paint frame stay on-theme.
+            // (#ffffff light / #0d1117 dark / #f4ecd8 sepia) so the
+            // rubber-band edge and any pre-paint frame stay on-theme.
             if #available(macOS 12.0, *) {
-                webView.underPageBackgroundColor = isDark ? WebPipeline.darkBackground : .white
+                switch theme {
+                case "dark": webView.underPageBackgroundColor = WebPipeline.darkBackground
+                case "sepia": webView.underPageBackgroundColor = WebPipeline.sepiaBackground
+                default: webView.underPageBackgroundColor = .white
+                }
             }
             #endif
         }

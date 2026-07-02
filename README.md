@@ -43,6 +43,7 @@ It is a true native macOS document app — multi‑window, multi‑file, dark‑
 | 📐 **Line numbers gutter** | Native `NSRulerView` gutter on Source and Split modes — width grows with the document, soft-wrapped continuations are not numbered (Xcode / VS Code convention) |
 | 🎯 **Current-line highlight** | The cursor's line number is rendered in bold + accent color in the gutter, follows the caret in real time. Toggle from *View* if you prefer it off |
 | 🔎 **Content zoom** | `⌘+` / `⌘-` / `⌘0` zoom the rendered preview (50 % → 300 %). Persisted per window, so each document keeps its own zoom level |
+| 🎨 **Theme picker** | Auto (system) / GitHub Light / GitHub Dark / Sepia — from the palette menu in the toolbar, persisted per window |
 | 🏷️ **Frontmatter toggle** | Auto-detects YAML frontmatter (Obsidian / Tolaria / Jekyll) and lets you hide it (`⇧⌘Y`) for a cleaner read |
 | 👁️ **Quick Look** | Select a `.md` in Finder and press **Space** — full rendering (code, math, diagrams, dark mode) without opening the app |
 | 🚀 **One-click auto-update** | Sparkle 2 + Apple-notarized DMGs + EdDSA signature — *Check for Updates…* prompts before downloading, then swaps and relaunches the new version automatically |
@@ -225,7 +226,7 @@ Debug builds are signed ad‑hoc (`CODE_SIGN_IDENTITY=-`), which is enough for l
 - [x] **Content zoom + current-line highlight (v0.7)** — `⌘+` / `⌘-` / `⌘0` zooms the preview (per-window), the gutter highlights the cursor's line in bold + accent color
 - [x] **Quick Look extension (v0.8)** — preview in Finder with the spacebar, same rendering pipeline as the app
 - [x] **Crash workaround (v0.8.1)** — pins the window to sRGB 8-bit to dodge a macOS QuartzCore/Metal half-float shader bug on Apple Silicon (reported to Apple)
-- [ ] **Theme picker** — GitHub light / dark / sepia / custom
+- [x] **Theme picker (v0.9)** — Auto / GitHub Light / GitHub Dark / Sepia, persisted per window
 - [ ] **Floating table of contents** — for long docs
 
 ## Contributing
