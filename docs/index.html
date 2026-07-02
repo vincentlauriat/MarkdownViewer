@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MarkdownViewer — Open any .md file instantly on macOS</title>
-<meta name="description" content="A fast, native macOS app that opens Markdown files from Finder in under 300 ms — GitHub-flavoured rendering, live reload, syntax highlighting, KaTeX math, Mermaid diagrams and a built-in editor. Free & open-source (MIT).">
+<meta name="description" content="A fast, native macOS app that opens Markdown files from Finder in under 300 ms — GitHub-flavoured rendering, live reload, syntax highlighting, KaTeX math, Mermaid diagrams, Quick Look previews, light/dark/sepia themes and a built-in editor. Free & open-source (MIT).">
 <meta property="og:title" content="MarkdownViewer">
 <meta property="og:description" content="Double-click a .md file. See it rendered in under 300 ms. Edit anywhere — it reloads on the fly. Native macOS, free & open-source.">
 <meta property="og:image" content="https://github.com/user-attachments/assets/6fcb6453-2e02-428d-abe1-22e97903c876">
@@ -178,7 +178,7 @@
 <span class="ln">3</span>Fast and <span class="b">**native**</span>.<br>
 <span class="ln">4</span><br>
 <span class="ln">5</span><span class="m">- [x]</span> Live reload<br>
-<span class="ln">6</span><span class="m">- [ ]</span> Quick Look<br>
+<span class="ln">6</span><span class="m">- [x]</span> Quick Look<br>
 <span class="ln">7</span><br>
 <span class="ln">8</span><span class="t">```swift</span><br>
 <span class="ln">9</span>let v = <span class="c">"Hi"</span><br>
@@ -188,7 +188,7 @@
             <h3>Project</h3>
             <p>Fast and <strong>native</strong>.</p>
             <div class="task"><span class="box on"></span> Live reload</div>
-            <div class="task"><span class="box"></span> Quick Look</div>
+            <div class="task"><span class="box on"></span> Quick Look</div>
             <pre class="mono"><span class="kw">let</span> v = <span style="color:#0a4fa8">"Hi"</span></pre>
           </div>
         </div>
@@ -206,12 +206,12 @@
   <div class="grid g3">
     <div class="card"><div class="ico">⚡</div><h3>Instant cold start</h3><p>A single SwiftUI scene with bundled web assets — no remote fetch on launch. Opens in under 300&nbsp;ms.</p></div>
     <div class="card"><div class="ico">🔄</div><h3>Live reload</h3><p>Edit in any external editor; the preview updates in ≈130&nbsp;ms and handles atomic saves cleanly.</p></div>
-    <div class="card"><div class="ico">🎨</div><h3>GitHub-flavoured</h3><p><code class="mono">markdown-it</code> with GFM tables, task lists and the familiar github-markdown styling.</p></div>
+    <div class="card"><div class="ico">🎨</div><h3>GitHub-flavoured &amp; themes</h3><p><code class="mono">markdown-it</code> with GFM tables and task lists — rendered in GitHub Light, GitHub Dark or a warm Sepia theme, per window.</p></div>
     <div class="card"><div class="ico">🌈</div><h3>Syntax highlighting</h3><p><code class="mono">highlight.js</code> with GitHub light &amp; dark themes for fenced code blocks.</p></div>
     <div class="card"><div class="ico">🧮</div><h3>Math &amp; diagrams</h3><p>Inline and display math via KaTeX, plus Mermaid flowcharts, sequence and graph diagrams.</p></div>
     <div class="card"><div class="ico">✏️</div><h3>Built-in editor</h3><p>Toggle Preview / Split / Source, with a syntax-highlighted source view, line-number gutter and native save.</p></div>
     <div class="card"><div class="ico">🔍</div><h3>Find, zoom &amp; print</h3><p>Native <code class="mono">⌘F</code> search, <code class="mono">⌘±</code> content zoom (per-window), and <code class="mono">⌘P</code> print / Save&nbsp;as&nbsp;PDF.</p></div>
-    <div class="card"><div class="ico">🌗</div><h3>Dark mode</h3><p>Follows the system appearance automatically and keeps each window's zoom level.</p></div>
+    <div class="card"><div class="ico">👁️</div><h3>Quick Look</h3><p>Select a <code class="mono">.md</code> in Finder and hit <b>Space</b> — full rendering with code, math and diagrams, without opening the app.</p></div>
     <div class="card"><div class="ico">🚀</div><h3>One-click updates</h3><p>Sparkle 2 + notarized DMGs + EdDSA signature — <em>Check for Updates…</em> downloads, swaps and relaunches.</p></div>
   </div>
 </div></section>
@@ -226,7 +226,7 @@
     <div class="stats">
       <div class="stat"><div class="k">&lt;300 ms</div><div class="v">Cold start to rendered</div></div>
       <div class="stat"><div class="k">≈130 ms</div><div class="v">Live-reload latency</div></div>
-      <div class="stat"><div class="k">~500</div><div class="v">Lines of Swift</div></div>
+      <div class="stat"><div class="k">~1.6k</div><div class="v">Lines of Swift</div></div>
       <div class="stat"><div class="k">100%</div><div class="v">Offline rendering (file://)</div></div>
     </div>
   </div>
