@@ -22,10 +22,4 @@ enum ViewMode: String, CaseIterable, Identifiable {
         case .code: "chevron.left.forwardslash.chevron.right"
         }
     }
-
-    func cycled() -> ViewMode {
-        let all = ViewMode.allCases
-        guard let i = all.firstIndex(of: self) else { return .preview }
-        return all[(i + 1) % all.count]
-    }
 }

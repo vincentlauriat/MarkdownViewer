@@ -52,7 +52,8 @@ struct WebView: UIViewRepresentable {
 extension WebView {
     fileprivate func configureWebView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
-        #if os(macOS)
+        #if os(macOS) && DEBUG
+        // Web Inspector (private WebKit KVC switch) — Debug builds only.
         config.preferences.setValue(true, forKey: "developerExtrasEnabled")
         #endif
 
@@ -73,9 +74,7 @@ extension WebView {
         // the page CSS, underPageBackgroundColor fills the overscroll area on-theme.
         if #available(macOS 12.0, *) {
             let isDark = NSApp?.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-            webView.underPageBackgroundColor = isDark
-                ? NSColor(srgbRed: 13 / 255, green: 17 / 255, blue: 23 / 255, alpha: 1)
-                : .white
+            webView.underPageBackgroundColor = isDark ? WebPipeline.darkBackground : .white
         }
         #else
         webView.isOpaque = false
@@ -135,15 +134,17 @@ extension WebView {
                 #endif
             }()
             let theme = isDark ? "dark" : "light"
-            webView.evaluateJavaScript("window.setTheme && window.setTheme('\(theme)')", completionHandler: nil)
+            webView.evaluateJavaScript("window.setTheme && window.setTheme('\(theme)')") { _, error in
+                if let error {
+                    log.error("setTheme failed: \(error.localizedDescription, privacy: .public)")
+                }
+            }
             #if os(macOS)
             // Match the opaque overscroll area to the page CSS background
             // (#ffffff light / #0d1117 dark) so the rubber-band edge and any
             // pre-paint frame stay on-theme.
             if #available(macOS 12.0, *) {
-                webView.underPageBackgroundColor = isDark
-                    ? NSColor(srgbRed: 13 / 255, green: 17 / 255, blue: 23 / 255, alpha: 1)
-                    : .white
+                webView.underPageBackgroundColor = isDark ? WebPipeline.darkBackground : .white
             }
             #endif
         }
@@ -186,12 +187,15 @@ extension WebView {
 
         func flush() {
             guard bundleReady, let webView else { return }
-            let payload = encodeForJS(liveMarkdown ?? documentMarkdown)
+            let payload = WebPipeline.encodeForJS(liveMarkdown ?? documentMarkdown)
             let visible = lastFrontmatterVisible ? "true" : "false"
             webView.evaluateJavaScript(
-                "window.setFrontmatterVisible && window.setFrontmatterVisible(\(visible)); window.renderMarkdown(\(payload))",
-                completionHandler: nil
-            )
+                "window.setFrontmatterVisible && window.setFrontmatterVisible(\(visible)); window.renderMarkdown(\(payload))"
+            ) { _, error in
+                if let error {
+                    log.error("renderMarkdown failed: \(error.localizedDescription, privacy: .public)")
+                }
+            }
         }
 
         // MARK: - Live reload
@@ -306,7 +310,11 @@ extension WebView {
         private func applyFrontmatterVisibility(_ visible: Bool) {
             lastFrontmatterVisible = visible
             guard bundleReady, let webView else { return }
-            webView.evaluateJavaScript("window.setFrontmatterVisible && window.setFrontmatterVisible(\(visible ? "true" : "false"))", completionHandler: nil)
+            webView.evaluateJavaScript("window.setFrontmatterVisible && window.setFrontmatterVisible(\(visible ? "true" : "false"))") { _, error in
+                if let error {
+                    log.error("setFrontmatterVisible failed: \(error.localizedDescription, privacy: .public)")
+                }
+            }
         }
 
         // MARK: - External links
@@ -328,18 +336,6 @@ extension WebView {
                 return
             }
             decisionHandler(.allow)
-        }
-
-        // MARK: - Helpers
-
-        private func encodeForJS(_ str: String) -> String {
-            guard
-                let data = try? JSONSerialization.data(withJSONObject: str, options: [.fragmentsAllowed]),
-                let result = String(data: data, encoding: .utf8)
-            else {
-                return "\"\""
-            }
-            return result
         }
 
         deinit {

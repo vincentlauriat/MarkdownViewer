@@ -189,7 +189,7 @@ struct MarkdownEditor: UIViewRepresentable {
 /// Coloration syntaxique très basique du Markdown via regex sur le NSTextStorage.
 /// Recoloriage complet à chaque édition — acceptable pour des docs courants
 /// (<10k caractères). À optimiser plus tard avec un range incrémental si besoin.
-private enum Highlighter {
+enum Highlighter {
     static func apply(to storage: NSTextStorage?, baseFont: PlatformFont) {
         guard let storage else { return }
         let str = storage.string as NSString

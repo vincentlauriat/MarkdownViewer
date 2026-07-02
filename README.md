@@ -8,6 +8,7 @@ Double‑click a Markdown file. See it rendered. Edit it in your favourite edito
 
 [![Platform](https://img.shields.io/badge/platform-macOS%2013%2B-blue.svg)](https://www.apple.com/macos)
 [![Release](https://img.shields.io/github/v/release/vincentlauriat/MarkdownViewer?color=brightgreen)](https://github.com/vincentlauriat/MarkdownViewer/releases/latest)
+[![CI](https://github.com/vincentlauriat/MarkdownViewer/actions/workflows/ci.yml/badge.svg)](https://github.com/vincentlauriat/MarkdownViewer/actions/workflows/ci.yml)
 [![Swift](https://img.shields.io/badge/Swift-5.9-orange.svg)](https://swift.org)
 [![SwiftUI](https://img.shields.io/badge/SwiftUI-Document%20Group-purple.svg)](https://developer.apple.com/swiftui)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](#license)
@@ -170,13 +171,16 @@ MarkdownViewer/
 │   │   ├── LineNumberRulerView.swift   # NSRulerView gutter + current-line highlight (macOS)
 │   │   ├── FindBar.swift               # SwiftUI floating find bar
 │   │   ├── FileWatcher.swift           # DispatchSource-based live reload (macOS)
-│   │   └── HelpWindows.swift           # In-app Help / What's New / About windows (macOS)
+│   │   ├── HelpWindows.swift           # In-app Help / What's New / About windows (macOS)
+│   │   └── Shared/WebPipeline.swift    # Helpers shared with the Quick Look extension
 │   └── Resources/
 │       ├── web/                        # index.html + render.js + vendor/
 │       └── Assets.xcassets/            # AppIcon (macOS .icns + iOS marketing 1024)
 ├── MarkdownViewerQL/
 │   ├── Sources/PreviewViewController.swift   # Quick Look extension (same web pipeline)
 │   └── MarkdownViewerQL.entitlements         # Sandbox + read-only file access
+├── MarkdownViewerTests/                # Unit tests (WebPipeline, Highlighter, FileWatcher)
+├── .github/workflows/ci.yml            # CI: build + tests (macOS), build (iOS Simulator)
 ├── Scripts/
 │   ├── fetch-vendor.sh                 # Downloads pinned JS/CSS from jsDelivr
 │   ├── build.sh                        # End-to-end: fetch → xcodegen → xcodebuild
@@ -198,6 +202,9 @@ xcodegen generate
 
 # Build only
 xcodebuild -project MarkdownViewer.xcodeproj -scheme MarkdownViewer -configuration Debug build
+
+# Run the unit tests
+xcodebuild -project MarkdownViewer.xcodeproj -scheme MarkdownViewer -configuration Debug test
 
 # Inspect runtime logs (the app uses os.Logger with a custom subsystem)
 log show --predicate 'subsystem == "com.vincent.MarkdownViewer"' --info --last 1m

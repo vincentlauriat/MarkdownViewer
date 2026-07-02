@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  macos:
+    name: Build & test (macOS)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Fetch vendored web assets
+        run: ./Scripts/fetch-vendor.sh
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build (Debug)
+        run: |
+          set -o pipefail
+          xcodebuild -project MarkdownViewer.xcodeproj \
+            -scheme MarkdownViewer \
+            -configuration Debug \
+            -derivedDataPath build \
+            build | tail -20
+
+      - name: Run unit tests
+        run: |
+          set -o pipefail
+          xcodebuild -project MarkdownViewer.xcodeproj \
+            -scheme MarkdownViewer \
+            -configuration Debug \
+            -derivedDataPath build \
+            test | tail -60
+
+  ios:
+    name: Build (iOS Simulator)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Fetch vendored web assets
+        run: ./Scripts/fetch-vendor.sh
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build (Debug, iOS Simulator)
+        run: |
+          set -o pipefail
+          xcodebuild -project MarkdownViewer.xcodeproj \
+            -scheme MarkdownViewerIOS \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            build | tail -20

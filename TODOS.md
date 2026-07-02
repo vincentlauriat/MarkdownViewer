@@ -111,13 +111,15 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 - [x] README anglais top qualité (badges, archi diagram, tech stack, roadmap, contributing)
 - [x] LICENSE MIT
 
-## Dette technique & qualité (identifiée le 2026-07-02)
+## Dette technique & qualité (identifiée le 2026-07-02, socle livré le 2026-07-02 — branch `chore/quality-foundation`)
 
-- [ ] Supprimer les projets périmés `MarkdownViewer 2.xcodeproj` / `MarkdownViewer 3.xcodeproj` (régénérations XcodeGen sans la cible QL)
-- [ ] Premiers tests automatisés (cibles faciles : `Highlighter` regex, extraction frontmatter, comparaison de versions, `FileWatcher`)
-- [ ] Factoriser le code dupliqué app ↔ extension QL (`encodeForJS`, `applyTheme`, chargement du bundle web) dans un petit module partagé
-- [ ] Désactiver `developerExtrasEnabled` (KVC privé) dans les builds Release
-- [ ] Supprimer le code mort `ViewMode.cycled()` (ContentView réimplémente le cycle en inline)
-- [ ] Centraliser les couleurs de thème (`#0d1117` dupliqué Swift + CSS) et les URLs GitHub hardcodées
-- [ ] Remonter les erreurs `evaluateJavaScript` / échecs Mermaid-KaTeX dans `os.Logger` au lieu de les avaler
-- [ ] CI GitHub Actions (build Debug macOS + iOS Simulator à chaque push)
+- [x] Supprimer les projets périmés `MarkdownViewer 2.xcodeproj` / `MarkdownViewer 3.xcodeproj`
+- [x] Premiers tests automatisés — cible `MarkdownViewerTests` (hosted), 25 tests / 3 suites : `WebPipelineTests` (encodeForJS + frontmatter), `HighlighterTests` (regex/attributs), `FileWatcherTests` (write in-place, atomic save + rebind, stop)
+- [x] Factoriser le code dupliqué app ↔ extension QL — `Sources/Shared/WebPipeline.swift` (`encodeForJS`, `hasFrontmatter`, `darkBackground`), compilé dans les 3 cibles
+- [x] Désactiver `developerExtrasEnabled` (KVC privé) hors Debug — `#if os(macOS) && DEBUG`
+- [x] Supprimer le code mort `ViewMode.cycled()` (aurait d'ailleurs été incorrect sur iPhone : ne filtrait pas Split)
+- [x] Centraliser la couleur dark `#0d1117` côté Swift (`WebPipeline.darkBackground`, commentaire de synchro vers le CSS)
+- [ ] Centraliser les URLs GitHub hardcodées (HelpWindows + release.sh)
+- [x] Remonter les erreurs `evaluateJavaScript` dans `os.Logger` (flush / setTheme / frontmatter, app + QL) + `console.error` dans les catch highlight/mermaid de render.js
+- [x] Retrait du KVC privé `drawsBackground=false` dans le QL (aligné sur le workaround crash : fond opaque via CSS)
+- [x] CI GitHub Actions — `.github/workflows/ci.yml` : build + tests macOS, build iOS Simulator (à valider au premier run sur GitHub)
