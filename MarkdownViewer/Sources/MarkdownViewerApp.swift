@@ -9,6 +9,7 @@ import Sparkle
 struct MarkdownViewerApp: App {
     #if os(macOS)
     private let colorSpacePinner = WindowColorSpacePinner()
+    private let crashRecovery = CrashRecovery()
 
     private let updaterController: SPUStandardUpdaterController = {
         let controller = SPUStandardUpdaterController(
@@ -63,6 +64,17 @@ struct MarkdownViewerApp: App {
             }
 
             #if os(macOS)
+            // Le "Save As…" natif de DocumentGroup existe déjà, mais reste caché derrière
+            // ⌥ (alternate de "Duplicate"). On ajoute un item toujours visible qui envoie
+            // le même sélecteur NSDocument, sans toucher au groupe .saveItem par défaut —
+            // le remplacer entièrement casse le bridge SwiftUI/NSDocument (Save lui-même
+            // cesse de fonctionner, vérifié empiriquement).
+            CommandGroup(after: .saveItem) {
+                Button("Save As…") {
+                    NSApp.sendAction(#selector(NSDocument.saveAs(_:)), to: nil, from: nil)
+                }
+            }
+
             CommandGroup(replacing: .appInfo) {
                 AboutMenuButton()
             }

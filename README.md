@@ -39,6 +39,7 @@ It is a true native macOS document app — multi‑window, multi‑file, dark‑
 | ☑️ **Task lists** | Render `- [x]` / `- [ ]` natively |
 | 🔍 **Find** | `Cmd+F` opens a native search bar, `Cmd+G` / `Cmd+Shift+G` to navigate |
 | 🖨️ **Print / Export PDF** | `Cmd+P` uses the native print dialog (the standard "Save as PDF" works) |
+| 💾 **Save As…** | Always-visible *File → Save As…* item to save the current document to a new location (the native alternate hidden behind ⌥ still works too) |
 | ✏️ **Editor mode** | Toggle Preview / Split / Source via toolbar (`Cmd+/` cycles), syntax-highlighted `NSTextView`, native Cmd+S / dirty indicator / undo / redo |
 | 📐 **Line numbers gutter** | Native `NSRulerView` gutter on Source and Split modes — width grows with the document, soft-wrapped continuations are not numbered (Xcode / VS Code convention) |
 | 🎯 **Current-line highlight** | The cursor's line number is rendered in bold + accent color in the gutter, follows the caret in real time. Toggle from *View* if you prefer it off |
@@ -49,6 +50,7 @@ It is a true native macOS document app — multi‑window, multi‑file, dark‑
 | 🚀 **One-click auto-update** | Sparkle 2 + Apple-notarized DMGs + EdDSA signature — *Check for Updates…* prompts before downloading, then swaps and relaunches the new version automatically |
 | 📖 **In-app Help & What's New** | Help (`⌘?`) and *What's New…* fetch the live README and release notes from GitHub and render them through the same Markdown pipeline as documents |
 | 🔒 **Safe by default** | `markdown-it` HTML disabled, DOMPurify on top, all rendering offline (`file://`) |
+| 🛟 **Crash recovery** | A detached watchdog relaunches the app and reopens your documents if a rare rendering crash ever takes the process down |
 
 ## Install
 
@@ -227,6 +229,7 @@ Debug builds are signed ad‑hoc (`CODE_SIGN_IDENTITY=-`), which is enough for l
 - [x] **Quick Look extension (v0.8)** — preview in Finder with the spacebar, same rendering pipeline as the app
 - [x] **Crash workaround (v0.8.1)** — pins the window to sRGB 8-bit to dodge a macOS QuartzCore/Metal half-float shader bug on Apple Silicon (reported to Apple)
 - [x] **Theme picker (v0.9)** — Auto / GitHub Light / GitHub Dark / Sepia, persisted per window
+- [x] **Crash recovery + visible Save As (v0.9.1)** — detached watchdog relaunches the app and reopens documents after a rare rendering crash; always-visible *File → Save As…*
 - [ ] **Floating table of contents** — for long docs
 
 ## Contributing

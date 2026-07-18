@@ -94,10 +94,15 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 - [x] **Quick Look extension** (`MarkdownViewerQL`) — preview Finder barre d'espace, même pipeline web, sandbox read-only, validé en prod sur release Developer ID
 - [x] **What's New épuré** — endpoint `/releases/latest`, un seul bloc de notes au lieu de tout l'historique
 - [x] **Workaround crash CoreAnimation/Metal (v0.8.1)** — fenêtre épinglée sRGB 8-bit (`window.colorSpace = .sRGB` + `contentsFormat = .RGBA8Uint`) + WebView opaque, contourne les shaders half-float manquants sur M4 (macOS 26.5.1 / 27.0 beta). Validé au scroll par Vincent.
-- [x] **Escalade crash : `toneMapMode = .never` (2026-07-05)** — couche WebView + arbre de layers complet de chaque fenêtre au `didBecomeKey`, après récidive sur cache Metal vierge (hypothèse cache corrompu réfutée). Branche `fix/tonemap-never-mitigation`, build + tests OK — validation scroll par Vincent à faire.
+- [x] **Escalade crash : `toneMapMode = .never` (2026-07-05)** — couche WebView + arbre de layers complet de chaque fenêtre au `didBecomeKey`, après récidive sur cache Metal vierge (hypothèse cache corrompu réfutée). Branche `fix/tonemap-never-mitigation`, build + tests OK — **validation scroll confirmée par Vincent (2026-07-18)**.
 - [ ] **Soumettre le rapport de bug à Apple** via Feedback Assistant (`docs/apple-feedback-coreanimation-crash.md` + 13 `.ips` dans `docs/crash-reports/`) — **encore plus urgent** : l'hypothèse cache est réfutée, seul Apple peut corriger la racine
 - [x] **Rotation clé Sparkle assumée** — clé `9PD2` officielle, warning DO NOT REGENERATE dans `release.sh`, note « update manuel une fois » dans les release notes v0.8.1
 - [x] **Backup de la clé privée Sparkle** hors keychain — fait le 2026-07-02, intégrité vérifiée par signature comparée (emplacement documenté dans MEMORY.md ; reste à le copier dans un gestionnaire de mots de passe)
+
+## v0.9.1 — Robustesse crash + Save As (livrée 2026-07-18)
+
+- [x] **CrashRecovery** (`Sources/CrashRecovery.swift`) — watchdog `/bin/sh` détaché qui survit au process, relance l'app après une sortie anormale (le crash CoreAnimation/Metal ci-dessus peut encore `abort()` le process depuis son propre thread de rendu, sans code app sur la pile fautive). Marqueur de session dans Application Support (epoch + compteur de relances + documents ouverts), garde-fou 3 relances consécutives max, reset après 60 s de session saine, purge le Saved Application State d'Apple après une relance (observé : conflit CoreUI recursive-lock au premier rendu sinon).
+- [x] **Save As… visible dans le menu File** — `CommandGroup(after: .saveItem)` envoie `NSDocument.saveAs(_:)` via la responder chain. Le natif `.saveItem` par défaut de `DocumentGroup` expose déjà "Save As…" mais uniquement caché derrière ⌥ (alternate de "Duplicate") — item ajouté pour le rendre toujours visible, sans remplacer le groupe par défaut (`CommandGroup(replacing: .saveItem)` casse le bridge SwiftUI/NSDocument : Save lui-même cesse de fonctionner, vérifié empiriquement avant d'adopter la bonne approche).
 
 ## Backlog (post-v3)
 
