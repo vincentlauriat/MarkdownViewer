@@ -9,6 +9,7 @@ import Sparkle
 struct MarkdownViewerApp: App {
     #if os(macOS)
     private let colorSpacePinner = WindowColorSpacePinner()
+    private let crashRecovery = CrashRecovery()
 
     private let updaterController: SPUStandardUpdaterController = {
         let controller = SPUStandardUpdaterController(
@@ -63,6 +64,17 @@ struct MarkdownViewerApp: App {
             }
 
             #if os(macOS)
+            // Le "Save As…" natif de DocumentGroup existe déjà, mais reste caché derrière
+            // ⌥ (alternate de "Duplicate"). On ajoute un item toujours visible qui envoie
+            // le même sélecteur NSDocument, sans toucher au groupe .saveItem par défaut —
+            // le remplacer entièrement casse le bridge SwiftUI/NSDocument (Save lui-même
+            // cesse de fonctionner, vérifié empiriquement).
+            CommandGroup(after: .saveItem) {
+                Button("Save As…") {
+                    NSApp.sendAction(#selector(NSDocument.saveAs(_:)), to: nil, from: nil)
+                }
+            }
+
             CommandGroup(replacing: .appInfo) {
                 AboutMenuButton()
             }
@@ -99,16 +111,20 @@ struct MarkdownViewerApp: App {
 }
 
 #if os(macOS)
-/// Pins every window of the app to plain sRGB as soon as it becomes key.
+/// Pins every window of the app to plain sRGB as soon as it becomes key, and
+/// disables tone mapping on its whole layer tree.
 ///
 /// Workaround for the missing half-float CoreAnimation shaders on macOS 26.5 / 27
 /// (see the matching per-WebView pinning in WebView.swift and
 /// docs/apple-feedback-coreanimation-crash.md). The WebView-level pinning covered
 /// the scroll-blit path, but on macOS 27 beta 26A5368g the same missing-shader
 /// abort came back through a tone-mapped CG image draw (`CA::CG::fill_image`)
-/// that can run for any window, before and outside the WebView pinning. A
-/// markdown viewer has no need for EDR / wide gamut anywhere, so pinning every
-/// window is free.
+/// that can run for any window, before and outside the WebView pinning. On
+/// 2026-07-05 (same seed) it recurred again through path fills
+/// (`CA::CG::fill_path` → `attachment_clear_frag_lph`) with the sRGB pinning
+/// active, so every layer now also gets `toneMapMode = .never` — the last
+/// half-float trigger reachable through public API. A markdown viewer has no
+/// need for EDR / wide gamut anywhere, so pinning every window is free.
 @MainActor
 final class WindowColorSpacePinner {
     private var token: NSObjectProtocol?
@@ -120,10 +136,26 @@ final class WindowColorSpacePinner {
             queue: .main
         ) { note in
             Task { @MainActor in
-                guard let window = note.object as? NSWindow, window.colorSpace != .sRGB else { return }
-                window.colorSpace = .sRGB
+                guard let window = note.object as? NSWindow else { return }
+                if window.colorSpace != .sRGB {
+                    window.colorSpace = .sRGB
+                }
+                if #available(macOS 15.0, *) {
+                    // Walk from the theme frame (contentView's superview) so the
+                    // titlebar and toolbar layers are covered too. Re-run on every
+                    // didBecomeKey to catch layers created since the last pass.
+                    let root = window.contentView?.superview ?? window.contentView
+                    Self.disableToneMapping(root?.layer)
+                }
             }
         }
+    }
+
+    @available(macOS 15.0, *)
+    private static func disableToneMapping(_ layer: CALayer?) {
+        guard let layer else { return }
+        layer.toneMapMode = .never
+        layer.sublayers?.forEach { disableToneMapping($0) }
     }
 
     deinit {

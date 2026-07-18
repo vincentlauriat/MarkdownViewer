@@ -80,6 +80,14 @@ extension WebView {
         // to sRGB once the view is in a window (see Coordinator.pinSRGBColorSpace).
         webView.allowsBackForwardNavigationGestures = false
         webView.layer?.contentsFormat = .RGBA8Uint
+        // Second escalation (2026-07-05, seed 26A5368g): the same abort came back
+        // through tone-mapped draws (`CA::CG::fill_image(... CGToneMapping ...)`) and
+        // path fills, both requesting the missing `_lph` half-float variants even with
+        // the sRGB/RGBA8 pinning active. Tone mapping is the remaining trigger we can
+        // switch off with public API — an SDR-only markdown viewer never needs it.
+        if #available(macOS 15.0, *) {
+            webView.layer?.toneMapMode = .never
+        }
         // Opaque layer (drawsBackground defaults to true); solid background comes from
         // the page CSS, underPageBackgroundColor fills the overscroll area on-theme.
         if #available(macOS 12.0, *) {
