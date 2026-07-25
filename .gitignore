@@ -35,6 +35,10 @@ release-notes-*.md
 #Perso
 docs/*
 !docs/index.html
+# Socle commun des landing pages — doit être publié avec la page
+!docs/assets/
+docs/assets/*
+!docs/assets/base.css
 COMMANDS.md
 CHANGES.md
 MEMORY.md
