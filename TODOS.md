@@ -22,6 +22,7 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 - [x] Recent files : géré par `DocumentGroup` (à vérifier au runtime)
 - [x] Find in document : `Cmd+F` ouvre une `FindBar` SwiftUI flottante, `Cmd+G` / `Cmd+Shift+G` pour next/prev, Esc pour fermer — utilise `WKWebView.find(_:configuration:)` natif
 - [x] Print / Export PDF : `Cmd+P` via `WKWebView.printOperation` natif (le bouton "Save as PDF" du dialog macOS gère l'export)
+- [x] Export PDF direct (sans passer par le dialog d'impression) — livré 2026-08-04, bouton toolbar + *File → Export as PDF…*, `NSSavePanel` + `NSPrintInfo.jobDisposition = .save` sur le même `printOperation`. Inspiré de la toolbar BmadBrowser.
 
 ### Polish v1
 - [x] App icon — "M↓" indigo squircle, généré par `Scripts/make-icon.swift` (10 tailles + Contents.json)
@@ -108,7 +109,7 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 
 - [x] Quick Look extension (preview Markdown dans Finder avec barre d'espace) — livré v0.8.0, validé par Vincent en prod
 - [x] Sélecteur de thèmes (Auto / GitHub Light / GitHub Dark / Sépia) — livré le 2026-07-02 (branch `feat/theme-picker`) : menu 🎨 toolbar, persisté par fenêtre, thème forcé via appearance de la WKWebView, palette sépia via custom properties CSS. Extension future : thèmes custom utilisateur.
-- [ ] Table of contents flottante / sidebar
+- [x] Table of contents flottante / sidebar — livré 2026-08-04 sous forme de menu toolbar "Plan" (`MarkdownOutline.swift`, pas une sidebar : outline calculé côté Swift, scroll géré côté JS par index) ; branche `feature/outline-toolbar`, inspiré de la toolbar BmadBrowser
 - [x] Zoom contenu (Cmd +/-) — livré v0.7.0
 - [x] Drag & drop de `.md` sur l'icône Dock (gratuit avec DocumentGroup) — validé v0.7.0
 - [ ] Distribution App Store (signing + sandbox + review process)

@@ -18,6 +18,10 @@ struct ContentView: View {
         WebPipeline.hasFrontmatter(document.text)
     }
 
+    private var outlineHeadings: [OutlineHeading] {
+        MarkdownOutline.headings(in: document.text)
+    }
+
     private var renderTheme: RenderTheme {
         RenderTheme(rawValue: renderThemeRaw) ?? .auto
     }
@@ -34,9 +38,15 @@ struct ContentView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            content
-                .frame(minWidth: 320, minHeight: 320)
-                .background(backgroundColor)
+            VStack(spacing: 0) {
+                content
+                    .background(backgroundColor)
+                if viewMode != .code {
+                    Divider()
+                    statsBar
+                }
+            }
+            .frame(minWidth: 320, minHeight: 320)
 
             if showFind && viewMode != .code {
                 FindBar(
@@ -111,6 +121,26 @@ struct ContentView: View {
         }
     }
 
+    /// Word count and reading time for the document body (frontmatter excluded, so
+    /// YAML keys don't inflate the count).
+    private var statsBar: some View {
+        let wordCount = MarkdownOutline
+            .stripFrontmatter(document.text)
+            .split { $0.isWhitespace || $0.isNewline }
+            .count
+        let minutes = max(1, Int((Double(wordCount) / 200.0).rounded()))
+        return HStack(spacing: 12) {
+            Label("\(wordCount) words", systemImage: "text.word.spacing")
+            Label("\(minutes) min read", systemImage: "clock")
+            Spacer()
+        }
+        .font(.caption)
+        .foregroundStyle(.secondary)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 6)
+        .background(.bar)
+    }
+
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .principal) {
@@ -123,6 +153,23 @@ struct ContentView: View {
             }
             .pickerStyle(.segmented)
             .frame(width: CGFloat(availableModes.count) * 50)
+        }
+        if !outlineHeadings.isEmpty {
+            ToolbarItem(placement: .primaryAction) {
+                Menu {
+                    ForEach(outlineHeadings) { heading in
+                        Button(outlineLabel(for: heading)) {
+                            post(.scrollToHeadingRequest, userInfo: ["index": heading.id])
+                        }
+                    }
+                } label: {
+                    Image(systemName: "list.bullet.indent")
+                }
+                .help("Document outline")
+                // No WebView exists in the Code hierarchy — the notification would
+                // land nowhere.
+                .disabled(viewMode == .code)
+            }
         }
         ToolbarItem(placement: .primaryAction) {
             Menu {
@@ -148,6 +195,25 @@ struct ContentView: View {
             .disabled(!hasFrontmatter)
             .keyboardShortcut("y", modifiers: [.command, .shift])
         }
+        #if os(macOS)
+        ToolbarItem(placement: .primaryAction) {
+            Button {
+                post(.exportPDFActiveDocument)
+            } label: {
+                Image(systemName: "arrow.down.doc")
+            }
+            .help("Export as PDF…")
+            // No WebView exists in the Code hierarchy — nothing to export from.
+            .disabled(viewMode == .code)
+        }
+        #endif
+    }
+
+    /// Indented by heading level; an empty ATX title (`### ###`) would otherwise
+    /// render as an invisible menu row.
+    private func outlineLabel(for heading: OutlineHeading) -> String {
+        let indent = String(repeating: "    ", count: max(0, heading.level - 1))
+        return indent + (heading.title.isEmpty ? "—" : heading.title)
     }
 
     private var backgroundColor: Color {

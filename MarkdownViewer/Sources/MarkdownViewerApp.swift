@@ -52,6 +52,7 @@ struct MarkdownViewerApp: App {
             CommandGroup(replacing: .printItem) {
                 Button("Print…") { post(.printActiveDocument) }
                     .keyboardShortcut("p", modifiers: .command)
+                Button("Export as PDF…") { post(.exportPDFActiveDocument) }
             }
 
             CommandGroup(replacing: .textEditing) {
@@ -201,4 +202,6 @@ extension Notification.Name {
     static let zoomOut = Notification.Name("MarkdownViewer.zoomOut")
     static let zoomReset = Notification.Name("MarkdownViewer.zoomReset")
     static let toggleCurrentLineHighlight = Notification.Name("MarkdownViewer.toggleCurrentLineHighlight")
+    static let scrollToHeadingRequest = Notification.Name("MarkdownViewer.scrollToHeadingRequest")
+    static let exportPDFActiveDocument = Notification.Name("MarkdownViewer.exportPDFActiveDocument")
 }

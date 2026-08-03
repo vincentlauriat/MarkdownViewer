@@ -38,7 +38,9 @@ It is a true native macOS document app — multi‑window, multi‑file, dark‑
 | 📊 **Diagrams** | Mermaid graphs, sequence diagrams, flowcharts |
 | ☑️ **Task lists** | Render `- [x]` / `- [ ]` natively |
 | 🔍 **Find** | `Cmd+F` opens a native search bar, `Cmd+G` / `Cmd+Shift+G` to navigate |
-| 🖨️ **Print / Export PDF** | `Cmd+P` uses the native print dialog (the standard "Save as PDF" works) |
+| 🗂️ **Document outline** | Toolbar menu lists the document's headings (indented by level) — pick one to jump straight to it |
+| 🖨️ **Print / Export PDF** | `Cmd+P` uses the native print dialog (the standard "Save as PDF" works), or *File → Export as PDF…* / the toolbar button to save a PDF directly without the print dialog |
+| 📊 **Word count & reading time** | A status bar under the preview shows the document's word count and estimated reading time |
 | 💾 **Save As…** | Always-visible *File → Save As…* item to save the current document to a new location (the native alternate hidden behind ⌥ still works too) |
 | ✏️ **Editor mode** | Toggle Preview / Split / Source via toolbar (`Cmd+/` cycles), syntax-highlighted `NSTextView`, native Cmd+S / dirty indicator / undo / redo |
 | 📐 **Line numbers gutter** | Native `NSRulerView` gutter on Source and Split modes — width grows with the document, soft-wrapped continuations are not numbered (Xcode / VS Code convention) |
