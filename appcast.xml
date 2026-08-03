@@ -6,16 +6,16 @@
     <description>MarkdownViewer release feed</description>
     <language>en</language>
     <item>
-      <title>v0.9.1</title>
-      <pubDate>Sat, 18 Jul 2026 22:06:44 +0200</pubDate>
-      <sparkle:version>6</sparkle:version>
-      <sparkle:shortVersionString>0.9.1</sparkle:shortVersionString>
+      <title>v0.10.0</title>
+      <pubDate>Tue, 04 Aug 2026 00:32:13 +0200</pubDate>
+      <sparkle:version>7</sparkle:version>
+      <sparkle:shortVersionString>0.10.0</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
-      <sparkle:releaseNotesLink>https://github.com/vincentlauriat/MarkdownViewer/releases/tag/v0.9.1</sparkle:releaseNotesLink>
+      <sparkle:releaseNotesLink>https://github.com/vincentlauriat/MarkdownViewer/releases/tag/v0.10.0</sparkle:releaseNotesLink>
       <enclosure
-        url="https://github.com/vincentlauriat/MarkdownViewer/releases/download/v0.9.1/MarkdownViewer-0.9.1.dmg"
+        url="https://github.com/vincentlauriat/MarkdownViewer/releases/download/v0.10.0/MarkdownViewer-0.10.0.dmg"
         type="application/octet-stream"
-        sparkle:edSignature="/vZ8xQxyLXrZwSsSR+UQ6f7jNjwAV6RIP4jTPxp3tWFgzN7Aq8x1mhG/tWDKv9Bj+CjgjWr4m3Qbuoqbq7rwCA==" length="5036956" />
+        sparkle:edSignature="lXBrGzsh5UOo+cUizMmOe86L0GiVCWkpAXZhuBZwN1f1ki4aq1fCHQ6e9BjDlP2QTpizfm5YqO2zyPGAuVfMCQ==" length="5081488" />
     </item>
   </channel>
 </rss>
