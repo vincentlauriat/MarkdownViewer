@@ -105,6 +105,13 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` annulé
 - [x] **CrashRecovery** (`Sources/CrashRecovery.swift`) — watchdog `/bin/sh` détaché qui survit au process, relance l'app après une sortie anormale (le crash CoreAnimation/Metal ci-dessus peut encore `abort()` le process depuis son propre thread de rendu, sans code app sur la pile fautive). Marqueur de session dans Application Support (epoch + compteur de relances + documents ouverts), garde-fou 3 relances consécutives max, reset après 60 s de session saine, purge le Saved Application State d'Apple après une relance (observé : conflit CoreUI recursive-lock au premier rendu sinon).
 - [x] **Save As… visible dans le menu File** — `CommandGroup(after: .saveItem)` envoie `NSDocument.saveAs(_:)` via la responder chain. Le natif `.saveItem` par défaut de `DocumentGroup` expose déjà "Save As…" mais uniquement caché derrière ⌥ (alternate de "Duplicate") — item ajouté pour le rendre toujours visible, sans remplacer le groupe par défaut (`CommandGroup(replacing: .saveItem)` casse le bridge SwiftUI/NSDocument : Save lui-même cesse de fonctionner, vérifié empiriquement avant d'adopter la bonne approche).
 
+## v0.10.0 — Menu Plan, Export PDF direct, barre de stats (livrée 2026-08-04)
+
+- [x] **Menu "Plan" (document outline)** — icône toolbar listant les titres du document, clic → scroll direct. `MarkdownOutline.swift` (parseur Swift aligné sur ce que `markdown-it` rend comme titre top-level). Porté depuis la toolbar de l'app sœur BmadBrowser.
+- [x] **Export PDF direct** — bouton toolbar + *File → Export as PDF…*, `NSSavePanel` + `NSPrintInfo.jobDisposition = .save` sur le `printOperation` existant.
+- [x] **Barre de statistiques** — nombre de mots + temps de lecture, sous l'aperçu (masquée en mode Source).
+- Détails techniques et vérifications dans `CHANGES.md`. PR #6, mergée sur `main`, release DMG notarisée + stapled + Sparkle EdDSA signée.
+
 ## Backlog (post-v3)
 
 - [x] Quick Look extension (preview Markdown dans Finder avec barre d'espace) — livré v0.8.0, validé par Vincent en prod
