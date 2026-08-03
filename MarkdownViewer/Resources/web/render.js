@@ -85,6 +85,18 @@
             .replace(/'/g, '&#39;');
     }
 
+    // Numbers the *top-level* headings so the Swift outline menu can scroll by index.
+    // `:scope >` is deliberate: markdown-it also emits <h1>-<h6> inside blockquotes
+    // and list items, which MarkdownOutline.swift does not count — numbering those
+    // too would shift every following index and scroll to the wrong heading. It also
+    // excludes the frontmatter <aside> for free.
+    function assignHeadingIds() {
+        const headings = target.querySelectorAll(
+            ':scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > h5, :scope > h6'
+        );
+        headings.forEach(function (el, i) { el.id = 'md-heading-' + i; });
+    }
+
     let lastHadFrontmatter = false;
 
     window.renderMarkdown = function (text) {
@@ -98,6 +110,7 @@
         }
         html += md.render(body);
         setHTML(target, html);
+        assignHeadingIds();
         // Re-highlight YAML block specifically (markdown-it.highlight ne s'applique
         // pas sur le HTML qu'on injecte nous-mêmes)
         if (window.hljs && yaml !== null) {
@@ -106,6 +119,14 @@
         }
         renderMath();
         transformMermaid();
+    };
+
+    // `behavior: 'auto'` (instant) is mandatory: an animated scroll drives the
+    // CoreAnimation blit path that aborts on the macOS 26.5 / 27 seeds (see the
+    // crash-workaround comments in WebView.swift). Never switch this to 'smooth'.
+    window.scrollToHeadingIndex = function (index) {
+        const el = document.getElementById('md-heading-' + index);
+        if (el) el.scrollIntoView({ behavior: 'auto', block: 'start' });
     };
 
     window.setFrontmatterVisible = function (visible) {

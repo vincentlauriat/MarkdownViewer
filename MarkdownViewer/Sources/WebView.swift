@@ -4,6 +4,7 @@ import WebKit
 
 #if os(macOS)
 import AppKit
+import UniformTypeIdentifiers
 #elseif os(iOS)
 import UIKit
 #endif
@@ -211,6 +212,13 @@ extension WebView {
                 let visible = (note.userInfo?["visible"] as? Bool) ?? true
                 self?.applyFrontmatterVisibility(visible)
             }
+            observe(.scrollToHeadingRequest) { [weak self] note in
+                guard let index = note.userInfo?["index"] as? Int else { return }
+                self?.scrollToHeading(index: index)
+            }
+            #if os(macOS)
+            observe(.exportPDFActiveDocument) { [weak self] _ in self?.exportPDF() }
+            #endif
         }
 
         private func observe(_ name: Notification.Name, action: @escaping @MainActor @Sendable (Notification) -> Void) {
@@ -321,6 +329,44 @@ extension WebView {
             printController.printFormatter = formatter
             printController.present(animated: true, completionHandler: nil)
             #endif
+        }
+
+        #if os(macOS)
+        /// Silent "print to PDF": same WebKit pagination as Print…, but the print
+        /// panel is replaced by a save panel and the operation writes straight to the
+        /// chosen file.
+        private func exportPDF() {
+            guard let webView, isActiveWebView() else { return }
+            let panel = NSSavePanel()
+            panel.allowedContentTypes = [.pdf]
+            let base = webView.window?.representedURL?.deletingPathExtension().lastPathComponent ?? "Untitled"
+            panel.nameFieldStringValue = base + ".pdf"
+            panel.canCreateDirectories = true
+            guard panel.runModal() == .OK, let url = panel.url else { return }
+            let info = NSPrintInfo()
+            info.topMargin = 36; info.bottomMargin = 36
+            info.leftMargin = 36; info.rightMargin = 36
+            info.jobDisposition = .save
+            // Cocoa matches this dictionary by NSString key, so the raw value is
+            // required — an `AttributeKey` struct would box and never be found.
+            info.dictionary()[NSPrintInfo.AttributeKey.jobSavingURL.rawValue] = url
+            let op = webView.printOperation(with: info)
+            op.showsPrintPanel = false
+            op.showsProgressPanel = false
+            op.view?.frame = NSRect(x: 0, y: 0, width: 800, height: 1100)
+            op.run()
+        }
+        #endif
+
+        // MARK: - Outline
+
+        private func scrollToHeading(index: Int) {
+            guard let webView, isActiveWebView() else { return }
+            webView.evaluateJavaScript("window.scrollToHeadingIndex && window.scrollToHeadingIndex(\(index))") { _, error in
+                if let error {
+                    log.error("scrollToHeadingIndex failed: \(error.localizedDescription, privacy: .public)")
+                }
+            }
         }
 
         // MARK: - Find
