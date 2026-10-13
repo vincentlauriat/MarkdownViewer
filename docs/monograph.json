@@ -1,0 +1,376 @@
+{
+  "name": "MarkdownViewer",
+  "no": "15",
+  "repo": "vincentlauriat/MarkdownViewer",
+  "url": "https://vincentlauriat.github.io/MarkdownViewer/",
+  "accent": "#0969da",
+  "meta": {
+    "title": "MarkdownViewer — Open any .md file instantly on macOS",
+    "description": "A fast, native macOS app that opens Markdown files from Finder in under 300 ms — GitHub-flavoured rendering, live reload, syntax highlighting, KaTeX math, Mermaid diagrams, Quick Look previews, light/dark/sepia themes and a built-in editor. Free & open-source (MIT).",
+    "favicon": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230969da'/%3E%3Ctext x='50' y='68' font-size='56' font-family='-apple-system,Segoe UI,Roboto,sans-serif' font-weight='800' fill='white' text-anchor='middle'%3EM%3C/text%3E%3Cpath d='M70 30 l0 22 m-8 -8 l8 8 8 -8' stroke='white' stroke-width='5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E",
+    "og_image": "https://github.com/user-attachments/assets/6fcb6453-2e02-428d-abe1-22e97903c876"
+  },
+  "role": {
+    "en": "Opens a .md in under 300&nbsp;ms",
+    "fr": "Ouvre un .md en moins de 300&nbsp;ms",
+    "zh": "開啟一個 .md 只要不到 300&nbsp;毫秒"
+  },
+  "thesis": {
+    "en": "Open any Markdown file instantly on macOS.",
+    "fr": "Ouvrez n'importe quel fichier Markdown instantanément sur macOS.",
+    "zh": "在 macOS 上瞬間開啟任何 Markdown 檔案。"
+  },
+  "lede": {
+    "en": "Double-click a <code>.md</code> in Finder and see it rendered the way GitHub does. Edit it in VS&nbsp;Code, vim or anything else — the preview reloads on the fly.",
+    "fr": "Double-cliquez un <code>.md</code> dans le Finder et voyez-le rendu comme sur GitHub. Éditez-le dans VS&nbsp;Code, vim ou autre — l'aperçu se recharge à la volée.",
+    "zh": "在 Finder 裡按兩下 <code>.md</code>，就能看到與 GitHub 相同的呈現方式。用 VS&nbsp;Code、vim 或任何編輯器修改——預覽會即時重新載入。"
+  },
+  "actions": [
+    {
+      "primary": true,
+      "href": "https://github.com/vincentlauriat/MarkdownViewer/releases/latest",
+      "label": {
+        "en": "Download for macOS",
+        "fr": "Télécharger pour macOS",
+        "zh": "下載 macOS 版"
+      }
+    },
+    {
+      "href": "https://github.com/vincentlauriat/MarkdownViewer",
+      "label": {
+        "en": "View on GitHub",
+        "fr": "Voir sur GitHub",
+        "zh": "在 GitHub 上檢視"
+      }
+    }
+  ],
+  "facts": [
+    {
+      "k": {
+        "en": "Requires",
+        "fr": "Configuration",
+        "zh": "系統需求"
+      },
+      "v": "macOS 13+"
+    },
+    {
+      "k": {
+        "en": "Distribution",
+        "fr": "Distribution",
+        "zh": "發行"
+      },
+      "v": {
+        "en": "Signed &amp; notarized",
+        "fr": "Signé et notarié",
+        "zh": "已簽章與公證"
+      }
+    },
+    {
+      "k": {
+        "en": "Updates",
+        "fr": "Mises à jour",
+        "zh": "更新"
+      },
+      "v": {
+        "en": "Auto-updates",
+        "fr": "Mises à jour automatiques",
+        "zh": "自動更新"
+      }
+    },
+    {
+      "k": {
+        "en": "Licence",
+        "fr": "Licence",
+        "zh": "授權"
+      },
+      "v": {
+        "en": "Free &amp; open-source (MIT)",
+        "fr": "Gratuit et open source (MIT)",
+        "zh": "免費開源（MIT）"
+      }
+    }
+  ],
+  "opener": {
+    "h": {
+      "en": "Everything GitHub renders — natively, offline",
+      "fr": "Tout ce que GitHub rend — nativement, hors ligne",
+      "zh": "GitHub 能呈現的一切——原生、離線"
+    },
+    "p": {
+      "en": "A true macOS document app: multi-window, Open&nbsp;Recent, dark-mode aware. The rich rendering you expect, with none of the Electron weight.",
+      "fr": "Une vraie app document macOS : multi-fenêtres, Ouvrir&nbsp;récent, compatible mode sombre. Le rendu riche attendu, sans le poids d'Electron.",
+      "zh": "一個真正的 macOS 文件應用程式：多視窗、開啟最近使用、支援深色模式。你期待的完整呈現，卻沒有 Electron 的負擔。"
+    }
+  },
+  "features": [
+    {
+      "h": {
+        "en": "Instant cold start",
+        "fr": "Démarrage à froid instantané",
+        "zh": "冷啟動即時完成"
+      },
+      "p": {
+        "en": "A single SwiftUI scene with bundled web assets — no remote fetch on launch. Opens in under 300&nbsp;ms.",
+        "fr": "Une seule scène SwiftUI avec les ressources web embarquées — aucun appel distant au lancement. Ouvre en moins de 300&nbsp;ms.",
+        "zh": "單一 SwiftUI 場景搭配內嵌的網頁資源——啟動時不需向遠端取檔。開啟時間不到 300&nbsp;毫秒。"
+      }
+    },
+    {
+      "h": {
+        "en": "Live reload",
+        "fr": "Rechargement live",
+        "zh": "即時重新載入"
+      },
+      "p": {
+        "en": "Edit in any external editor; the preview updates in ≈130&nbsp;ms and handles atomic saves cleanly.",
+        "fr": "Éditez dans n'importe quel éditeur externe ; l'aperçu se met à jour en ≈130&nbsp;ms et gère proprement les sauvegardes atomiques.",
+        "zh": "在任何外部編輯器中修改；預覽會在約 130&nbsp;毫秒內更新，並妥善處理原子式儲存。"
+      }
+    },
+    {
+      "h": {
+        "en": "GitHub-flavoured &amp; themes",
+        "fr": "Saveur GitHub et thèmes",
+        "zh": "GitHub 風格與主題"
+      },
+      "p": {
+        "en": "<code>markdown-it</code> with GFM tables and task lists — rendered in GitHub Light, GitHub Dark or a warm Sepia theme, per window.",
+        "fr": "<code>markdown-it</code> avec tableaux GFM et listes de tâches — rendu en GitHub Light, GitHub Dark ou un thème Sépia chaleureux, fenêtre par fenêtre.",
+        "zh": "<code>markdown-it</code> 支援 GFM 表格與任務清單——可逐視窗選擇 GitHub Light、GitHub Dark 或溫暖的 Sepia 主題。"
+      }
+    },
+    {
+      "h": {
+        "en": "Syntax highlighting",
+        "fr": "Coloration syntaxique",
+        "zh": "語法上色"
+      },
+      "p": {
+        "en": "<code>highlight.js</code> with GitHub light &amp; dark themes for fenced code blocks.",
+        "fr": "<code>highlight.js</code> avec thèmes GitHub clair et sombre pour les blocs de code.",
+        "zh": "<code>highlight.js</code> 為圍欄式程式碼區塊提供 GitHub 淺色與深色主題。"
+      }
+    },
+    {
+      "h": {
+        "en": "Math &amp; diagrams",
+        "fr": "Maths et diagrammes",
+        "zh": "數學式與圖表"
+      },
+      "p": {
+        "en": "Inline and display math via KaTeX, plus Mermaid flowcharts, sequence and graph diagrams.",
+        "fr": "Maths en ligne et en bloc via KaTeX, plus les organigrammes, diagrammes de séquence et graphes Mermaid.",
+        "zh": "透過 KaTeX 呈現行內與獨立數學式，另支援 Mermaid 流程圖、循序圖與關係圖。"
+      }
+    },
+    {
+      "h": {
+        "en": "Built-in editor",
+        "fr": "Éditeur intégré",
+        "zh": "內建編輯器"
+      },
+      "p": {
+        "en": "Toggle Preview / Split / Source, with a syntax-highlighted source view, line-number gutter and native save.",
+        "fr": "Basculez entre Aperçu / Scindé / Source, avec vue source colorée, gouttière de numéros de ligne et sauvegarde native.",
+        "zh": "可切換預覽／分割／原始碼檢視，附語法上色的原始碼區、行號欄，以及原生儲存。"
+      }
+    },
+    {
+      "h": {
+        "en": "Find, zoom &amp; print",
+        "fr": "Recherche, zoom et impression",
+        "zh": "搜尋、縮放與列印"
+      },
+      "p": {
+        "en": "Native <code>⌘F</code> search, <code>⌘±</code> content zoom (per-window), and <code>⌘P</code> print / Save&nbsp;as&nbsp;PDF.",
+        "fr": "Recherche native <code>⌘F</code>, zoom du contenu <code>⌘±</code> (par fenêtre), et <code>⌘P</code> impression / Enregistrer&nbsp;en&nbsp;PDF.",
+        "zh": "原生 <code>⌘F</code> 搜尋、<code>⌘±</code> 內容縮放（逐視窗），以及 <code>⌘P</code> 列印／儲存為&nbsp;PDF。"
+      }
+    },
+    {
+      "h": {
+        "en": "Quick Look",
+        "fr": "Coup d'œil",
+        "zh": "快速查看"
+      },
+      "p": {
+        "en": "Select a <code>.md</code> in Finder and hit <b>Space</b> — full rendering with code, math and diagrams, without opening the app.",
+        "fr": "Sélectionnez un <code>.md</code> dans le Finder et appuyez sur <b>Espace</b> — rendu complet avec code, maths et diagrammes, sans ouvrir l'app.",
+        "zh": "在 Finder 中選取 <code>.md</code> 並按 <b>空白鍵</b>——不必開啟應用程式，就能完整呈現程式碼、數學式與圖表。"
+      }
+    },
+    {
+      "h": {
+        "en": "One-click updates",
+        "fr": "Mises à jour en un clic",
+        "zh": "一鍵更新"
+      },
+      "p": {
+        "en": "Sparkle 2 + notarized DMGs + EdDSA signature — <em>Check for Updates…</em> downloads, swaps and relaunches.",
+        "fr": "Sparkle 2 + DMG notariés + signature EdDSA — <em>Rechercher les mises à jour…</em> télécharge, remplace et relance.",
+        "zh": "Sparkle 2 + 已公證的 DMG + EdDSA 簽章——<em>檢查更新…</em>會自動下載、替換並重新啟動。"
+      }
+    }
+  ],
+  "chapters": [
+    {
+      "id": "why",
+      "h": {
+        "en": "Built for one job, done fast",
+        "fr": "Faite pour une seule chose, et vite",
+        "zh": "為一件事而生，而且要快"
+      },
+      "p": {
+        "en": "macOS ships no real Markdown previewer — TextEdit shows raw text, and Electron apps take seconds to launch. MarkdownViewer delegates to native APIs wherever possible and drops into JavaScript only for what <code>WKWebView</code> renders for free. The result: a featherweight document app that feels instant.",
+        "fr": "macOS ne livre aucun vrai aperçu Markdown — TextEdit montre le texte brut, et les apps Electron mettent des secondes à démarrer. MarkdownViewer s'appuie sur les API natives partout où c'est possible et ne descend en JavaScript que pour ce que <code>WKWebView</code> rend gratuitement. Résultat : une app document plume, qui paraît instantanée.",
+        "zh": "macOS 沒有內建真正的 Markdown 預覽工具——文字編輯只顯示原始文字，而 Electron 應用程式啟動要好幾秒。MarkdownViewer 盡可能交給原生 API，只在 <code>WKWebView</code> 本來就免費提供的部分才使用 JavaScript。結果是一個輕如羽毛、感覺瞬間開啟的文件應用程式。"
+      },
+      "blocks": [
+        {
+          "type": "specs",
+          "items": [
+            {
+              "h": "&lt;300 ms",
+              "p": {
+                "en": "Cold start to rendered",
+                "fr": "Du démarrage à froid au rendu",
+                "zh": "從冷啟動到完成呈現"
+              }
+            },
+            {
+              "h": "≈130 ms",
+              "p": {
+                "en": "Live-reload latency",
+                "fr": "Latence du rechargement live",
+                "zh": "即時重新載入延遲"
+              }
+            },
+            {
+              "h": "~1.6k",
+              "p": {
+                "en": "Lines of Swift",
+                "fr": "Lignes de Swift",
+                "zh": "行 Swift 程式碼"
+              }
+            },
+            {
+              "h": "100%",
+              "p": {
+                "en": "Offline rendering (file://)",
+                "fr": "Rendu hors ligne (file://)",
+                "zh": "離線呈現（file://）"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "how",
+      "h": {
+        "en": "How it works",
+        "fr": "Comment ça marche",
+        "zh": "運作方式"
+      },
+      "p": {
+        "en": "A native SwiftUI + AppKit document app on top, the proven JavaScript Markdown pipeline bundled and rendered offline underneath. The best of both worlds.",
+        "fr": "Au-dessus, une app document native SwiftUI + AppKit ; en dessous, le pipeline Markdown JavaScript éprouvé, embarqué et rendu hors ligne. Le meilleur des deux mondes.",
+        "zh": "上層是原生的 SwiftUI + AppKit 文件應用程式，下層是成熟的 JavaScript Markdown 流程，內嵌並離線呈現。兩者的長處兼得。"
+      },
+      "blocks": [
+        {
+          "type": "plates",
+          "items": [
+            {
+              "src": "https://github.com/user-attachments/assets/6fcb6453-2e02-428d-abe1-22e97903c876",
+              "w": 1376,
+              "h": 768,
+              "wide": true,
+              "alt": "MarkdownViewer architecture: from a Finder double-click through SwiftUI DocumentGroup to the bundled WKWebView rendering pipeline",
+              "caption": {
+                "en": "<b>From double-click to rendered</b> — Finder hands the file to a native <code>DocumentGroup</code>; a <code>WKWebView</code> renders it with markdown-it, highlight.js, KaTeX and Mermaid, all bundled and offline.",
+                "fr": "<b>Du double-clic au rendu</b> — le Finder confie le fichier à un <code>DocumentGroup</code> natif ; une <code>WKWebView</code> le rend avec markdown-it, highlight.js, KaTeX et Mermaid, tous embarqués et hors ligne.",
+                "zh": "<b>從按兩下到完成呈現</b> — Finder 把檔案交給原生的 <code>DocumentGroup</code>；再由 <code>WKWebView</code> 以 markdown-it、highlight.js、KaTeX 與 Mermaid 呈現，全部內嵌且離線。"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "install",
+      "h": {
+        "en": "Up and running in 30 seconds",
+        "fr": "Opérationnel en 30 secondes",
+        "zh": "30 秒內開始使用"
+      },
+      "p": {
+        "en": "No App Store, no sign-in. Notarized by Apple — it launches by double-click, even offline.",
+        "fr": "Pas d'App Store, pas de compte. Notariée par Apple — elle se lance d'un double-clic, même hors ligne.",
+        "zh": "不需 App Store，也不需登入。已通過 Apple 公證——即使離線，按兩下也能啟動。"
+      },
+      "blocks": [
+        {
+          "type": "steps",
+          "items": [
+            {
+              "en": "<b>Download.</b> Grab the latest signed <code>.dmg</code> from GitHub Releases and mount it.",
+              "fr": "<b>Télécharger.</b> Récupérez le dernier <code>.dmg</code> signé depuis GitHub Releases et montez-le.",
+              "zh": "<b>下載。</b> 從 GitHub Releases 取得最新的已簽章 <code>.dmg</code> 並掛載。"
+            },
+            {
+              "en": "<b>Install.</b> Drag <code>MarkdownViewer.app</code> into <code>/Applications</code>. That's it.",
+              "fr": "<b>Installer.</b> Glissez <code>MarkdownViewer.app</code> dans <code>/Applications</code>. C'est tout.",
+              "zh": "<b>安裝。</b> 將 <code>MarkdownViewer.app</code> 拖入 <code>/Applications</code>。就這樣。"
+            },
+            {
+              "en": "<b>Set as default.</b> Right-click any <code>.md</code> → Get&nbsp;Info → Open&nbsp;with → <em>Change&nbsp;All…</em>",
+              "fr": "<b>Définir par défaut.</b> Clic droit sur un <code>.md</code> → Lire&nbsp;les&nbsp;informations → Ouvrir&nbsp;avec → <em>Tout&nbsp;modifier…</em>",
+              "zh": "<b>設為預設開啟方式。</b> 在任一 <code>.md</code> 上按右鍵 → 取得資訊 → 開啟方式 → <em>全部更改…</em>"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "close": {
+    "h": {
+      "en": "Make Markdown feel native",
+      "fr": "Donnez à Markdown un vrai goût natif",
+      "zh": "讓 Markdown 有原生的手感"
+    },
+    "p": {
+      "en": "Free, open-source, and updated automatically. macOS 13 Ventura or later.",
+      "fr": "Gratuite, open source et mise à jour automatiquement. macOS 13 Ventura ou ultérieur.",
+      "zh": "免費、開源，並會自動更新。macOS 13 Ventura 或以上版本。"
+    },
+    "actions": [
+      {
+        "primary": true,
+        "href": "https://github.com/vincentlauriat/MarkdownViewer/releases/latest",
+        "label": {
+          "en": "Download for macOS",
+          "fr": "Télécharger pour macOS",
+          "zh": "下載 macOS 版"
+        }
+      },
+      {
+        "href": "https://github.com/vincentlauriat/MarkdownViewer#readme",
+        "label": {
+          "en": "Read the docs",
+          "fr": "Lire la doc",
+          "zh": "閱讀說明文件"
+        }
+      }
+    ]
+  },
+  "colophon": {
+    "notes": [
+      {
+        "en": "Also at <a href=\"https://lauriat.fr/outils/markdownviewer/\">lauriat.fr</a>.",
+        "fr": "Aussi sur <a href=\"https://lauriat.fr/outils/markdownviewer/\">lauriat.fr</a>.",
+        "zh": "另見 <a href=\"https://lauriat.fr/outils/markdownviewer/\">lauriat.fr</a>。"
+      }
+    ]
+  }
+}

@@ -35,6 +35,7 @@ release-notes-*.md
 #Perso
 docs/*
 !docs/index.html
+!docs/monograph.json
 # Socle commun des landing pages — doit être publié avec la page
 !docs/assets/
 docs/assets/*

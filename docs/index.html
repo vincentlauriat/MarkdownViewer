@@ -1,328 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="--accent:#0969da;--on-accent:#eff1f2;--accent-ink:#0968d8">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MarkdownViewer — Open any .md file instantly on macOS</title>
-<meta name="description" content="A fast, native macOS app that opens Markdown files from Finder in under 300 ms — GitHub-flavoured rendering, live reload, syntax highlighting, KaTeX math, Mermaid diagrams, Quick Look previews, light/dark/sepia themes and a built-in editor. Free & open-source (MIT).">
-<meta property="og:title" content="MarkdownViewer">
-<meta property="og:description" content="Double-click a .md file. See it rendered in under 300 ms. Edit anywhere — it reloads on the fly. Native macOS, free & open-source.">
-<meta property="og:image" content="https://github.com/user-attachments/assets/6fcb6453-2e02-428d-abe1-22e97903c876">
+<meta name="description" content="A fast, native macOS app that opens Markdown files from Finder in under 300 ms — GitHub-flavoured rendering, live reload, syntax highlighting, KaTeX math, Mermaid diagrams, Quick Look previews, light/dark/sepia themes and a built-in editor. Free &amp; open-source (MIT).">
+<meta name="theme-color" content="#eff1f2">
 <meta property="og:type" content="website">
+<meta property="og:title" content="MarkdownViewer — Open any .md file instantly on macOS">
+<meta property="og:description" content="A fast, native macOS app that opens Markdown files from Finder in under 300 ms — GitHub-flavoured rendering, live reload, syntax highlighting, KaTeX math, Mermaid diagrams, Quick Look previews, light/dark/sepia themes and a built-in editor. Free &amp; open-source (MIT).">
+<meta property="og:url" content="https://vincentlauriat.github.io/MarkdownViewer/">
+<meta property="og:image" content="https://github.com/user-attachments/assets/6fcb6453-2e02-428d-abe1-22e97903c876">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230969da'/%3E%3Ctext x='50' y='68' font-size='56' font-family='-apple-system,Segoe UI,Roboto,sans-serif' font-weight='800' fill='white' text-anchor='middle'%3EM%3C/text%3E%3Cpath d='M70 30 l0 22 m-8 -8 l8 8 8 -8' stroke='white' stroke-width='5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="assets/base.css">
-<style>
-  :root{
-    --bg:#ffffff; --bg-soft:#f6f8fa; --panel:#ffffff; --line:#e4e8ee;
-    --ink:#1f2328; --muted:#5d6772; --faint:#8a929d;
-    --accent:#0969da; --accent-deep:#0a4fa8; --accent-soft:#ddf0ff; --ok:#1a7f37;
-    --code-bg:#0d1117; --code-line:#1d2531;
-    --maxw:1100px;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
-  body{background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
-  a{color:inherit;text-decoration:none}
-  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
-  .mono{font-family:var(--font-mono)}
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; viewBox=&#x27;0 0 100 100&#x27;%3E%3Crect width=&#x27;100&#x27; height=&#x27;100&#x27; rx=&#x27;22&#x27; fill=&#x27;%230969da&#x27;/%3E%3Ctext x=&#x27;50&#x27; y=&#x27;68&#x27; font-size=&#x27;56&#x27; font-family=&#x27;-apple-system,Segoe UI,Roboto,sans-serif&#x27; font-weight=&#x27;800&#x27; fill=&#x27;white&#x27; text-anchor=&#x27;middle&#x27;%3EM%3C/text%3E%3Cpath d=&#x27;M70 30 l0 22 m-8 -8 l8 8 8 -8&#x27; stroke=&#x27;white&#x27; stroke-width=&#x27;5&#x27; fill=&#x27;none&#x27; stroke-linecap=&#x27;round&#x27; stroke-linejoin=&#x27;round&#x27;/%3E%3C/svg%3E">
+<link rel="preload" href="/assets/schibsted.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/monograph/v1/monograph.css">
 
-  /* nav */
-  nav{position:sticky;top:0;z-index:20;backdrop-filter:saturate(180%) blur(12px);background:rgba(255,255,255,.78);border-bottom:1px solid var(--line)}
-  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
-  .brand{display:flex;align-items:center;gap:11px;font-weight:750;letter-spacing:-.2px}
-  .logo{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#0969da,#1f6feb);display:grid;place-items:center;color:#fff;font-weight:800;position:relative;box-shadow:0 4px 12px rgba(9,105,218,.3)}
-  .logo span{font-size:17px}
-  .nav-links{display:flex;gap:24px;align-items:center;color:var(--muted);font-size:14.5px}
-  .nav-links a:hover{color:var(--ink)}
-  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:11px;font-weight:650;font-size:15px;transition:transform .12s ease,box-shadow .12s ease,background .12s}
-  .btn:hover{transform:translateY(-1px)}
-  .btn-primary{background:linear-gradient(135deg,#0969da,#1f6feb);color:#fff;box-shadow:0 6px 22px rgba(9,105,218,.32)}
-  .btn-primary:hover{box-shadow:0 10px 28px rgba(9,105,218,.42)}
-  .btn-ghost{border:1px solid var(--line);color:var(--ink);background:#fff}
-  .btn-ghost:hover{border-color:#c7cfda;background:var(--bg-soft)}
-  .btn-sm{padding:8px 15px;font-size:14px;border-radius:9px}
-
-  /* hero */
-  header{padding:78px 0 36px;background:
-    radial-gradient(820px 380px at 18% -8%,rgba(9,105,218,.10),transparent 62%),
-    linear-gradient(180deg,#fbfdff,#ffffff 70%)}
-  .hero-grid{display:grid;grid-template-columns:1.02fr 1fr;gap:48px;align-items:center}
-  .pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;color:var(--muted);padding:6px 13px;border-radius:999px;font-size:13px;margin-bottom:22px}
-  .pill b{color:var(--accent)}
-  h1{font-size:clamp(36px,5.4vw,58px);line-height:1.05;font-weight:820;letter-spacing:-1.6px}
-  h1 .grad{background:linear-gradient(120deg,#1f6feb,#0a4fa8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-  .sub{max-width:540px;margin:20px 0 0;font-size:clamp(16px,2vw,19px);color:var(--muted)}
-  .cta{display:flex;gap:13px;flex-wrap:wrap;margin:30px 0 14px}
-  .meta{color:var(--faint);font-size:13px;display:flex;flex-wrap:wrap;gap:6px 14px}
-  .meta b{color:var(--muted);font-weight:600}
-
-  /* signature window mock */
-  .winwrap{filter:drop-shadow(0 30px 60px rgba(16,32,64,.18))}
-  .win{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
-  .titlebar{display:flex;align-items:center;gap:8px;padding:11px 14px;background:var(--bg-soft);border-bottom:1px solid var(--line)}
-  .dot{width:11px;height:11px;border-radius:50%}
-  .dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
-  .titlebar .name{margin-left:8px;font-size:12.5px;color:var(--faint)}
-  .titlebar .name b{color:var(--muted);font-weight:600}
-  .split{display:grid;grid-template-columns:1fr 1fr;min-height:280px}
-  .src{background:var(--code-bg);color:#c9d1d9;padding:16px 14px;font:12.5px/1.7 var(--font-mono);overflow:hidden}
-  .src .ln{color:#4b5563;-webkit-user-select:none;user-select:none;display:inline-block;width:18px;text-align:right;margin-right:12px}
-  .src .h{color:#79c0ff;font-weight:700}
-  .src .b{color:#ffa657}
-  .src .c{color:#7ee787}
-  .src .t{color:#d2a8ff}
-  .src .m{color:#ff7b72}
-  .rendered{padding:18px 18px;font-size:13.5px;overflow:hidden}
-  .rendered h3{font-size:18px;font-weight:750;letter-spacing:-.4px;border-bottom:1px solid var(--line);padding-bottom:7px;margin-bottom:10px}
-  .rendered p{color:#39414c;margin-bottom:10px}
-  .rendered .task{display:flex;align-items:center;gap:8px;color:#39414c;margin:3px 0}
-  .rendered .box{width:14px;height:14px;border:1.5px solid #c7cfda;border-radius:4px;flex:none}
-  .rendered .box.on{background:var(--accent);border-color:var(--accent);position:relative}
-  .rendered .box.on::after{content:"✓";color:#fff;font-size:10px;position:absolute;inset:0;display:grid;place-items:center}
-  .rendered pre{background:var(--bg-soft);border:1px solid var(--line);border-radius:8px;padding:9px 11px;font:12px/1.6 var(--font-mono);color:#0a4fa8;margin-top:6px}
-  .rendered .kw{color:#cf222e}.rendered .fn{color:#8250df}
-
-  /* sections */
-  section{padding:74px 0;border-top:1px solid var(--line)}
-  .eyebrow{color:var(--accent);font-weight:700;font-size:12.5px;letter-spacing:1.4px;text-transform:uppercase}
-  .center{text-align:center}
-  .center .eyebrow{display:block}
-  h2{font-size:clamp(27px,3.7vw,38px);font-weight:800;letter-spacing:-.7px;margin:9px 0 12px}
-  .lead{color:var(--muted);max-width:620px;font-size:17px}
-  .center .lead{margin-left:auto;margin-right:auto}
-  .num300{font-variant-numeric:tabular-nums}
-
-  .grid{display:grid;gap:16px;margin-top:42px}
-  .g3{grid-template-columns:repeat(3,1fr)}
-  .g2{grid-template-columns:repeat(2,1fr)}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;transition:border-color .15s,transform .15s,box-shadow .15s}
-  .card:hover{border-color:#cfe0f5;transform:translateY(-2px);box-shadow:0 12px 30px rgba(16,32,64,.07)}
-  .card h3{font-size:16.5px;margin-bottom:5px;letter-spacing:-.2px}
-  .card p{color:var(--muted);font-size:14.5px}
-  .ico{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent-deep);font-size:21px;margin-bottom:14px}
-
-  /* why / stats */
-  .why{background:var(--bg-soft);border-radius:18px;padding:40px;display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:center;margin-top:8px}
-  .stats{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:18px}
-  .stat .k{font-size:28px;font-weight:820;letter-spacing:-1px;color:var(--accent-deep)}
-  .stat .v{color:var(--muted);font-size:13.5px;margin-top:2px}
-
-  /* gallery */
-  .gallery{display:grid;grid-template-columns:1fr;gap:18px;margin-top:42px}
-  .gallery figure{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 16px 40px rgba(16,32,64,.08)}
-  .gallery img{display:block;width:100%}
-  .gallery figcaption{color:var(--muted);font-size:13.5px;padding:12px 16px;border-top:1px solid var(--line)}
-  .gallery figcaption b{color:var(--ink)}
-
-  /* install */
-  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:42px;counter-reset:s}
-  .step{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 22px 20px;position:relative}
-  .step::before{counter-increment:s;content:counter(s);position:absolute;top:-14px;left:22px;width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#0969da,#1f6feb);color:#fff;font-weight:800;display:grid;place-items:center;font-size:15px;box-shadow:0 5px 14px rgba(9,105,218,.3)}
-  .step h3{margin:6px 0 5px;font-size:16px}
-  .step p{color:var(--muted);font-size:14.5px}
-  .step code{background:var(--code-bg);color:#c9d1d9;border-radius:6px;padding:2px 7px;font:12.5px/1.4 var(--font-mono)}
-
-  .final{text-align:center;background:
-    radial-gradient(620px 280px at 50% 120%,rgba(9,105,218,.12),transparent 66%)}
-  .final .cta{justify-content:center}
-
-  footer{border-top:1px solid var(--line);padding:34px 0;color:var(--muted);font-size:14px;text-align:center}
-  footer a{color:var(--accent);font-weight:600}
-
-  @media(max-width:880px){
-    .hero-grid{grid-template-columns:1fr;gap:34px}
-    .why{grid-template-columns:1fr;padding:28px}
-    .g3,.steps{grid-template-columns:1fr}
-    .g2{grid-template-columns:1fr}
-    .nav-links a:not(.btn){display:none}
-  }
-
-  .langtog{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;flex:none}
-  .langtog button{background:transparent;border:0;color:var(--muted);font:600 12.5px/1 var(--font-mono);
-    padding:0 10px;min-height:36px;cursor:pointer}
-  .langtog button+button{border-left:1px solid var(--line)}
-  .langtog button:hover{color:var(--txt)}
-  .langtog button.on{background:var(--accent);color:var(--on-accent)}
-  /* En francais les libelles de nav sont plus longs qu'en anglais : sous 600px
-     la barre deborde de quelques pixels. On resserre le selecteur plutot que
-     de raccourcir un libelle correct. */
-  @media(max-width:600px){.langtog button{padding:0 7px;font-size:11.5px}}
-</style>
 </head>
 <body>
-<a class="skip" href="#top"><span class="en">Skip to content</span><span class="fr">Aller au contenu</span><span class="zh">跳至內容</span></a>
-
-<nav><div class="wrap">
-  <a class="brand" href="#top"><span class="logo"><span>M↓</span></span>MarkdownViewer</a>
-  <div class="nav-links">
-    <a href="#features"><span class="en">Features</span><span class="fr">Fonctions</span><span class="zh">功能</span></a>
-    <a href="#why"><span class="en">Why</span><span class="fr">Pourquoi</span><span class="zh">為什麼</span></a>
-    <a href="#install"><span class="en">Install</span><span class="fr">Installer</span><span class="zh">安裝</span></a>
-    <a href="https://github.com/vincentlauriat/MarkdownViewer">GitHub</a>
-    <div class="langtog" role="group" aria-label="Language / Langue / 語言">
-    <button type="button" data-lang="en" class="on" onclick="setLang('en')">EN</button>
-    <button type="button" data-lang="fr" onclick="setLang('fr')">FR</button>
-    <button type="button" data-lang="zh" onclick="setLang('zh')">中文</button>
-  </div>
-    <a class="btn btn-primary btn-sm" href="https://github.com/vincentlauriat/MarkdownViewer/releases/latest"><span class="en">Download</span><span class="fr">Télécharger</span><span class="zh">下載</span></a>
-  </div>
-</div></nav>
-
-<header id="top"><div class="wrap">
-  <div class="hero-grid">
-    <div>
-      <span class="pill">⚡ <span class="en">Opens a <b>.md</b> in under <span class="mono num300">300&nbsp;ms</span></span><span class="fr">Ouvre un <b>.md</b> en moins de <span class="mono num300">300&nbsp;ms</span></span><span class="zh">開啟一個 <b>.md</b> 只要不到 <span class="mono num300">300&nbsp;毫秒</span></span></span>
-      <h1><span class="en">Open any Markdown file<br><span class="grad">instantly on macOS.</span></span><span class="fr">Ouvrez n'importe quel fichier Markdown<br><span class="grad">instantanément sur macOS.</span></span><span class="zh">在 macOS 上<span class="grad">瞬間開啟任何 Markdown 檔案。</span></span></h1>
-      <p class="sub"><span class="en">Double-click a <code class="mono">.md</code> in Finder and see it rendered the way GitHub does. Edit it in VS&nbsp;Code, vim or anything else — the preview reloads on the fly.</span><span class="fr">Double-cliquez un <code class="mono">.md</code> dans le Finder et voyez-le rendu comme sur GitHub. Éditez-le dans VS&nbsp;Code, vim ou autre — l'aperçu se recharge à la volée.</span><span class="zh">在 Finder 裡按兩下 <code class="mono">.md</code>，就能看到與 GitHub 相同的呈現方式。用 VS&nbsp;Code、vim 或任何編輯器修改——預覽會即時重新載入。</span></p>
-      <div class="cta">
-        <a class="btn btn-primary" href="https://github.com/vincentlauriat/MarkdownViewer/releases/latest">⬇︎ <span class="en">Download for macOS</span><span class="fr">Télécharger pour macOS</span><span class="zh">下載 macOS 版</span></a>
-        <a class="btn btn-ghost" href="https://github.com/vincentlauriat/MarkdownViewer"><span class="en">View on GitHub</span><span class="fr">Voir sur GitHub</span><span class="zh">在 GitHub 上檢視</span></a>
-      </div>
-      <p class="meta"><span class="en"><b>Free &amp; open-source (MIT)</b> · Signed &amp; notarized · macOS 13+ · Auto-updates</span><span class="fr"><b>Gratuit et open source (MIT)</b> · Signé et notarié · macOS 13+ · Mises à jour automatiques</span><span class="zh"><b>免費開源（MIT）</b> · 已簽章與公證 · macOS 13+ · 自動更新</span></p>
-    </div>
-
-    <div class="winwrap">
-      <div class="win" role="img" aria-label="MarkdownViewer split view: Markdown source on the left, rendered output on the right">
-        <div class="titlebar">
-          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-          <span class="name"><b>README.md</b> — <span class="en">Split</span><span class="fr">Scindé</span><span class="zh">分割檢視</span></span>
-        </div>
-        <div class="split">
-          <div class="src mono" aria-hidden="true">
-<span class="ln">1</span><span class="h"># Project</span><br>
-<span class="ln">2</span><br>
-<span class="ln">3</span>Fast and <span class="b">**native**</span>.<br>
-<span class="ln">4</span><br>
-<span class="ln">5</span><span class="m">- [x]</span> Live reload<br>
-<span class="ln">6</span><span class="m">- [x]</span> Quick Look<br>
-<span class="ln">7</span><br>
-<span class="ln">8</span><span class="t">```swift</span><br>
-<span class="ln">9</span>let v = <span class="c">"Hi"</span><br>
-<span class="ln">10</span><span class="t">```</span>
-          </div>
-          <div class="rendered">
-            <h3>Project</h3>
-            <p>Fast and <strong>native</strong>.</p>
-            <div class="task"><span class="box on"></span> <span class="en">Live reload</span><span class="fr">Rechargement live</span><span class="zh">即時重新載入</span></div>
-            <div class="task"><span class="box on"></span> <span class="en">Quick Look</span><span class="fr">Coup d'œil</span><span class="zh">快速查看</span></div>
-            <pre class="mono"><span class="kw">let</span> v = <span style="color:#0a4fa8">"Hi"</span></pre>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+<a class="skip" href="#content"><span class="en">Skip to content</span><span class="fr">Aller au contenu</span><span class="zh">跳至內容</span></a>
+<header class="running"><div class="wrap">
+<a class="back" href="https://vincentlauriat.github.io/#w15"><svg class="arw l" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg><span class="en">Vincent Lauriat</span><span class="fr">Vincent Lauriat</span><span class="zh">Vincent Lauriat</span></a>
+<span class="here"><span class="num">15</span> · MarkdownViewer</span>
+<div class="langs" role="group" aria-label="Language / Langue / 語言"><button type="button" data-lang="en" aria-pressed="false">EN</button><button type="button" data-lang="fr" aria-pressed="false">FR</button><button type="button" data-lang="zh" aria-pressed="false">中文</button></div>
+<a class="gh" href="https://github.com/vincentlauriat/MarkdownViewer">GitHub</a>
 </div></header>
-
-<section id="features"><div class="wrap">
-  <div class="center">
-    <p class="eyebrow"><span class="en">## features</span><span class="fr">## fonctions</span><span class="zh">## 功能</span></p>
-    <h2><span class="en">Everything GitHub renders — natively, offline</span><span class="fr">Tout ce que GitHub rend — nativement, hors ligne</span><span class="zh">GitHub 能呈現的一切——原生、離線</span></h2>
-    <p class="lead"><span class="en">A true macOS document app: multi-window, Open&nbsp;Recent, dark-mode aware. The rich rendering you expect, with none of the Electron weight.</span><span class="fr">Une vraie app document macOS : multi-fenêtres, Ouvrir&nbsp;récent, compatible mode sombre. Le rendu riche attendu, sans le poids d'Electron.</span><span class="zh">一個真正的 macOS 文件應用程式：多視窗、開啟最近使用、支援深色模式。你期待的完整呈現，卻沒有 Electron 的負擔。</span></p>
-  </div>
-  <div class="grid g3">
-    <div class="card"><div class="ico">⚡</div><h3><span class="en">Instant cold start</span><span class="fr">Démarrage à froid instantané</span><span class="zh">冷啟動即時完成</span></h3><p><span class="en">A single SwiftUI scene with bundled web assets — no remote fetch on launch. Opens in under 300&nbsp;ms.</span><span class="fr">Une seule scène SwiftUI avec les ressources web embarquées — aucun appel distant au lancement. Ouvre en moins de 300&nbsp;ms.</span><span class="zh">單一 SwiftUI 場景搭配內嵌的網頁資源——啟動時不需向遠端取檔。開啟時間不到 300&nbsp;毫秒。</span></p></div>
-    <div class="card"><div class="ico">🔄</div><h3><span class="en">Live reload</span><span class="fr">Rechargement live</span><span class="zh">即時重新載入</span></h3><p><span class="en">Edit in any external editor; the preview updates in ≈130&nbsp;ms and handles atomic saves cleanly.</span><span class="fr">Éditez dans n'importe quel éditeur externe ; l'aperçu se met à jour en ≈130&nbsp;ms et gère proprement les sauvegardes atomiques.</span><span class="zh">在任何外部編輯器中修改；預覽會在約 130&nbsp;毫秒內更新，並妥善處理原子式儲存。</span></p></div>
-    <div class="card"><div class="ico">🎨</div><h3><span class="en">GitHub-flavoured &amp; themes</span><span class="fr">Saveur GitHub et thèmes</span><span class="zh">GitHub 風格與主題</span></h3><p><span class="en"><code class="mono">markdown-it</code> with GFM tables and task lists — rendered in GitHub Light, GitHub Dark or a warm Sepia theme, per window.</span><span class="fr"><code class="mono">markdown-it</code> avec tableaux GFM et listes de tâches — rendu en GitHub Light, GitHub Dark ou un thème Sépia chaleureux, fenêtre par fenêtre.</span><span class="zh"><code class="mono">markdown-it</code> 支援 GFM 表格與任務清單——可逐視窗選擇 GitHub Light、GitHub Dark 或溫暖的 Sepia 主題。</span></p></div>
-    <div class="card"><div class="ico">🌈</div><h3><span class="en">Syntax highlighting</span><span class="fr">Coloration syntaxique</span><span class="zh">語法上色</span></h3><p><span class="en"><code class="mono">highlight.js</code> with GitHub light &amp; dark themes for fenced code blocks.</span><span class="fr"><code class="mono">highlight.js</code> avec thèmes GitHub clair et sombre pour les blocs de code.</span><span class="zh"><code class="mono">highlight.js</code> 為圍欄式程式碼區塊提供 GitHub 淺色與深色主題。</span></p></div>
-    <div class="card"><div class="ico">🧮</div><h3><span class="en">Math &amp; diagrams</span><span class="fr">Maths et diagrammes</span><span class="zh">數學式與圖表</span></h3><p><span class="en">Inline and display math via KaTeX, plus Mermaid flowcharts, sequence and graph diagrams.</span><span class="fr">Maths en ligne et en bloc via KaTeX, plus les organigrammes, diagrammes de séquence et graphes Mermaid.</span><span class="zh">透過 KaTeX 呈現行內與獨立數學式，另支援 Mermaid 流程圖、循序圖與關係圖。</span></p></div>
-    <div class="card"><div class="ico">✏️</div><h3><span class="en">Built-in editor</span><span class="fr">Éditeur intégré</span><span class="zh">內建編輯器</span></h3><p><span class="en">Toggle Preview / Split / Source, with a syntax-highlighted source view, line-number gutter and native save.</span><span class="fr">Basculez entre Aperçu / Scindé / Source, avec vue source colorée, gouttière de numéros de ligne et sauvegarde native.</span><span class="zh">可切換預覽／分割／原始碼檢視，附語法上色的原始碼區、行號欄，以及原生儲存。</span></p></div>
-    <div class="card"><div class="ico">🔍</div><h3><span class="en">Find, zoom &amp; print</span><span class="fr">Recherche, zoom et impression</span><span class="zh">搜尋、縮放與列印</span></h3><p><span class="en">Native <code class="mono">⌘F</code> search, <code class="mono">⌘±</code> content zoom (per-window), and <code class="mono">⌘P</code> print / Save&nbsp;as&nbsp;PDF.</span><span class="fr">Recherche native <code class="mono">⌘F</code>, zoom du contenu <code class="mono">⌘±</code> (par fenêtre), et <code class="mono">⌘P</code> impression / Enregistrer&nbsp;en&nbsp;PDF.</span><span class="zh">原生 <code class="mono">⌘F</code> 搜尋、<code class="mono">⌘±</code> 內容縮放（逐視窗），以及 <code class="mono">⌘P</code> 列印／儲存為&nbsp;PDF。</span></p></div>
-    <div class="card"><div class="ico">👁️</div><h3><span class="en">Quick Look</span><span class="fr">Coup d'œil</span><span class="zh">快速查看</span></h3><p><span class="en">Select a <code class="mono">.md</code> in Finder and hit <b>Space</b> — full rendering with code, math and diagrams, without opening the app.</span><span class="fr">Sélectionnez un <code class="mono">.md</code> dans le Finder et appuyez sur <b>Espace</b> — rendu complet avec code, maths et diagrammes, sans ouvrir l'app.</span><span class="zh">在 Finder 中選取 <code class="mono">.md</code> 並按 <b>空白鍵</b>——不必開啟應用程式，就能完整呈現程式碼、數學式與圖表。</span></p></div>
-    <div class="card"><div class="ico">🚀</div><h3><span class="en">One-click updates</span><span class="fr">Mises à jour en un clic</span><span class="zh">一鍵更新</span></h3><p><span class="en">Sparkle 2 + notarized DMGs + EdDSA signature — <em>Check for Updates…</em> downloads, swaps and relaunches.</span><span class="fr">Sparkle 2 + DMG notariés + signature EdDSA — <em>Rechercher les mises à jour…</em> télécharge, remplace et relance.</span><span class="zh">Sparkle 2 + 已公證的 DMG + EdDSA 簽章——<em>檢查更新…</em>會自動下載、替換並重新啟動。</span></p></div>
-  </div>
+<main>
+<section class="title"><div class="wrap g12">
+<h1 class="nm long" style="--len:14"><span class="no" aria-label="Work no. 15">15</span><span>MarkdownViewer</span></h1>
+<p class="role"><span class="en">Opens a .md in under 300&nbsp;ms</span><span class="fr">Ouvre un .md en moins de 300&nbsp;ms</span><span class="zh">開啟一個 .md 只要不到 300&nbsp;毫秒</span></p>
+<div class="t-left">
+<p class="thesis"><span class="en">Open any Markdown file instantly on macOS.</span><span class="fr">Ouvrez n'importe quel fichier Markdown instantanément sur macOS.</span><span class="zh">在 macOS 上瞬間開啟任何 Markdown 檔案。</span></p>
+<p class='lede'><span class="en">Double-click a <code>.md</code> in Finder and see it rendered the way GitHub does. Edit it in VS&nbsp;Code, vim or anything else — the preview reloads on the fly.</span><span class="fr">Double-cliquez un <code>.md</code> dans le Finder et voyez-le rendu comme sur GitHub. Éditez-le dans VS&nbsp;Code, vim ou autre — l'aperçu se recharge à la volée.</span><span class="zh">在 Finder 裡按兩下 <code>.md</code>，就能看到與 GitHub 相同的呈現方式。用 VS&nbsp;Code、vim 或任何編輯器修改——預覽會即時重新載入。</span></p>
+<div class="acts"><a class="btn" href="https://github.com/vincentlauriat/MarkdownViewer/releases/latest"><span class="en">Download for macOS</span><span class="fr">Télécharger pour macOS</span><span class="zh">下載 macOS 版</span></a><a class="lnk" href="https://github.com/vincentlauriat/MarkdownViewer"><span class="en">View on GitHub</span><span class="fr">Voir sur GitHub</span><span class="zh">在 GitHub 上檢視</span><svg class="arw" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a></div>
+<dl class="facts"><div><dt><span class="en">Requires</span><span class="fr">Configuration</span><span class="zh">系統需求</span></dt><dd>macOS 13+</dd></div><div><dt><span class="en">Distribution</span><span class="fr">Distribution</span><span class="zh">發行</span></dt><dd><span class="en">Signed &amp; notarized</span><span class="fr">Signé et notarié</span><span class="zh">已簽章與公證</span></dd></div><div><dt><span class="en">Updates</span><span class="fr">Mises à jour</span><span class="zh">更新</span></dt><dd><span class="en">Auto-updates</span><span class="fr">Mises à jour automatiques</span><span class="zh">自動更新</span></dd></div><div><dt><span class="en">Licence</span><span class="fr">Licence</span><span class="zh">授權</span></dt><dd><span class="en">Free &amp; open-source (MIT)</span><span class="fr">Gratuit et open source (MIT)</span><span class="zh">免費開源（MIT）</span></dd></div></dl>
+</div>
+<div class="t-right"></div>
 </div></section>
-
-<section id="why"><div class="wrap">
-  <div class="why">
-    <div>
-      <p class="eyebrow"><span class="en">// why it exists</span><span class="fr">// pourquoi elle existe</span><span class="zh">// 為什麼有這個工具</span></p>
-      <h2 style="text-align:left"><span class="en">Built for one job, done fast</span><span class="fr">Faite pour une seule chose, et vite</span><span class="zh">為一件事而生，而且要快</span></h2>
-      <p class="lead"><span class="en">macOS ships no real Markdown previewer — TextEdit shows raw text, and Electron apps take seconds to launch. MarkdownViewer delegates to native APIs wherever possible and drops into JavaScript only for what <code class="mono">WKWebView</code> renders for free. The result: a featherweight document app that feels instant.</span><span class="fr">macOS ne livre aucun vrai aperçu Markdown — TextEdit montre le texte brut, et les apps Electron mettent des secondes à démarrer. MarkdownViewer s'appuie sur les API natives partout où c'est possible et ne descend en JavaScript que pour ce que <code class="mono">WKWebView</code> rend gratuitement. Résultat : une app document plume, qui paraît instantanée.</span><span class="zh">macOS 沒有內建真正的 Markdown 預覽工具——文字編輯只顯示原始文字，而 Electron 應用程式啟動要好幾秒。MarkdownViewer 盡可能交給原生 API，只在 <code class="mono">WKWebView</code> 本來就免費提供的部分才使用 JavaScript。結果是一個輕如羽毛、感覺瞬間開啟的文件應用程式。</span></p>
-    </div>
-    <div class="stats">
-      <div class="stat"><div class="k">&lt;300 ms</div><div class="v"><span class="en">Cold start to rendered</span><span class="fr">Du démarrage à froid au rendu</span><span class="zh">從冷啟動到完成呈現</span></div></div>
-      <div class="stat"><div class="k">≈130 ms</div><div class="v"><span class="en">Live-reload latency</span><span class="fr">Latence du rechargement live</span><span class="zh">即時重新載入延遲</span></div></div>
-      <div class="stat"><div class="k">~1.6k</div><div class="v"><span class="en">Lines of Swift</span><span class="fr">Lignes de Swift</span><span class="zh">行 Swift 程式碼</span></div></div>
-      <div class="stat"><div class="k">100%</div><div class="v"><span class="en">Offline rendering (file://)</span><span class="fr">Rendu hors ligne (file://)</span><span class="zh">離線呈現（file://）</span></div></div>
-    </div>
-  </div>
-</div></section>
-
-<section id="screens"><div class="wrap">
-  <div class="center">
-    <p class="eyebrow"><span class="en">under the hood</span><span class="fr">sous le capot</span><span class="zh">底層架構</span></p>
-    <h2><span class="en">How it works</span><span class="fr">Comment ça marche</span><span class="zh">運作方式</span></h2>
-    <p class="lead"><span class="en">A native SwiftUI + AppKit document app on top, the proven JavaScript Markdown pipeline bundled and rendered offline underneath. The best of both worlds.</span><span class="fr">Au-dessus, une app document native SwiftUI + AppKit ; en dessous, le pipeline Markdown JavaScript éprouvé, embarqué et rendu hors ligne. Le meilleur des deux mondes.</span><span class="zh">上層是原生的 SwiftUI + AppKit 文件應用程式，下層是成熟的 JavaScript Markdown 流程，內嵌並離線呈現。兩者的長處兼得。</span></p>
-  </div>
-  <div class="gallery">
-    <figure>
-      <img src="https://github.com/user-attachments/assets/6fcb6453-2e02-428d-abe1-22e97903c876" alt="MarkdownViewer architecture: from a Finder double-click through SwiftUI DocumentGroup to the bundled WKWebView rendering pipeline" loading="lazy">
-      <figcaption><span class="en"><b>From double-click to rendered</b> — Finder hands the file to a native <code class="mono">DocumentGroup</code>; a <code class="mono">WKWebView</code> renders it with markdown-it, highlight.js, KaTeX and Mermaid, all bundled and offline.</span><span class="fr"><b>Du double-clic au rendu</b> — le Finder confie le fichier à un <code class="mono">DocumentGroup</code> natif ; une <code class="mono">WKWebView</code> le rend avec markdown-it, highlight.js, KaTeX et Mermaid, tous embarqués et hors ligne.</span><span class="zh"><b>從按兩下到完成呈現</b> — Finder 把檔案交給原生的 <code class="mono">DocumentGroup</code>；再由 <code class="mono">WKWebView</code> 以 markdown-it、highlight.js、KaTeX 與 Mermaid 呈現，全部內嵌且離線。</span></figcaption>
-    </figure>
-  </div>
-</div></section>
-
-<section id="install"><div class="wrap">
-  <div class="center">
-    <p class="eyebrow"><span class="en">get started</span><span class="fr">démarrer</span><span class="zh">開始使用</span></p>
-    <h2><span class="en">Up and running in 30 seconds</span><span class="fr">Opérationnel en 30 secondes</span><span class="zh">30 秒內開始使用</span></h2>
-    <p class="lead"><span class="en">No App Store, no sign-in. Notarized by Apple — it launches by double-click, even offline.</span><span class="fr">Pas d'App Store, pas de compte. Notariée par Apple — elle se lance d'un double-clic, même hors ligne.</span><span class="zh">不需 App Store，也不需登入。已通過 Apple 公證——即使離線，按兩下也能啟動。</span></p>
-  </div>
-  <div class="steps">
-    <div class="step"><h3><span class="en">Download</span><span class="fr">Télécharger</span><span class="zh">下載</span></h3><p><span class="en">Grab the latest signed <code>.dmg</code> from GitHub Releases and mount it.</span><span class="fr">Récupérez le dernier <code>.dmg</code> signé depuis GitHub Releases et montez-le.</span><span class="zh">從 GitHub Releases 取得最新的已簽章 <code>.dmg</code> 並掛載。</span></p></div>
-    <div class="step"><h3><span class="en">Install</span><span class="fr">Installer</span><span class="zh">安裝</span></h3><p><span class="en">Drag <code>MarkdownViewer.app</code> into <code>/Applications</code>. That's it.</span><span class="fr">Glissez <code>MarkdownViewer.app</code> dans <code>/Applications</code>. C'est tout.</span><span class="zh">將 <code>MarkdownViewer.app</code> 拖入 <code>/Applications</code>。就這樣。</span></p></div>
-    <div class="step"><h3><span class="en">Set as default</span><span class="fr">Définir par défaut</span><span class="zh">設為預設開啟方式</span></h3><p><span class="en">Right-click any <code>.md</code> → Get&nbsp;Info → Open&nbsp;with → <em>Change&nbsp;All…</em></span><span class="fr">Clic droit sur un <code>.md</code> → Lire&nbsp;les&nbsp;informations → Ouvrir&nbsp;avec → <em>Tout&nbsp;modifier…</em></span><span class="zh">在任一 <code>.md</code> 上按右鍵 → 取得資訊 → 開啟方式 → <em>全部更改…</em></span></p></div>
-  </div>
-</div></section>
-
-<section class="final"><div class="wrap">
-  <p class="eyebrow"><span class="en">ready?</span><span class="fr">prêt ?</span><span class="zh">準備好了嗎？</span></p>
-  <h2><span class="en">Make Markdown feel native</span><span class="fr">Donnez à Markdown un vrai goût natif</span><span class="zh">讓 Markdown 有原生的手感</span></h2>
-  <p class="lead" style="margin:0 auto 6px"><span class="en">Free, open-source, and updated automatically. macOS 13 Ventura or later.</span><span class="fr">Gratuite, open source et mise à jour automatiquement. macOS 13 Ventura ou ultérieur.</span><span class="zh">免費、開源，並會自動更新。macOS 13 Ventura 或以上版本。</span></p>
-  <div class="cta">
-    <a class="btn btn-primary" href="https://github.com/vincentlauriat/MarkdownViewer/releases/latest">⬇︎ <span class="en">Download for macOS</span><span class="fr">Télécharger pour macOS</span><span class="zh">下載 macOS 版</span></a>
-    <a class="btn btn-ghost" href="https://github.com/vincentlauriat/MarkdownViewer#readme"><span class="en">Read the docs</span><span class="fr">Lire la doc</span><span class="zh">閱讀說明文件</span></a>
-  </div>
-</div></section>
-
-<footer><div class="wrap">
-  MarkdownViewer · <span class="en">MIT License</span><span class="fr">Licence MIT</span><span class="zh">MIT 授權</span> · © 2026 Vincent Lauriat ·
-  <a href="https://github.com/vincentlauriat/MarkdownViewer">github.com/vincentlauriat/MarkdownViewer</a>
-  · <a href="https://lauriat.fr/outils/markdownviewer/">lauriat.fr</a>
-</div></footer>
-
-<script>
-  /* zh-Hant et non zh : sur un système configuré en chinois simplifié, un
-     simple `zh` laisse le navigateur choisir une fonte Han simplifiée, qui
-     rend certains caractères traditionnels dans la mauvaise forme. */
-  var LANG_TAG={en:'en',fr:'fr',zh:'zh-Hant'};
-  function setLang(l){
-    if(!LANG_TAG[l]) l='en';
-    document.body.classList.remove('lang-en','lang-fr','lang-zh');
-    document.body.classList.add('lang-'+l);
-    document.documentElement.lang=LANG_TAG[l];
-    /* On boucle sur les boutons au lieu de les nommer un par un : ajouter une
-       4e langue ne demandera alors aucune retouche de ce script. */
-    document.querySelectorAll('.langtog button').forEach(function(b){
-      var on=b.dataset.lang===l;
-      b.classList.toggle('on',on);
-      b.setAttribute('aria-pressed',on?'true':'false');
-    });
-    try{localStorage.setItem('vl-lang',l)}catch(e){}
-  }
-  (function(){
-    var saved;try{saved=localStorage.getItem('vl-lang')}catch(e){}
-    var n=(navigator.language||'en').slice(0,2).toLowerCase();
-    /* Le traditionnel est servi a tout visiteur sinophone, y compris zh-CN :
-       c'est la seule variante chinoise disponible, et la renvoyer vaut mieux
-       que de rabattre ce visiteur sur l'anglais. */
-    setLang(saved||(n==='zh'?'zh':(n==='fr'?'fr':'en')));
-  })();
-</script>
+<section class="opener" id="content"><div class="wrap"><div class="op-grid"><div class="numeral" aria-hidden="true">15</div><div class="op-text"><h2><span class="en">Everything GitHub renders — natively, offline</span><span class="fr">Tout ce que GitHub rend — nativement, hors ligne</span><span class="zh">GitHub 能呈現的一切——原生、離線</span></h2><p><span class="en">A true macOS document app: multi-window, Open&nbsp;Recent, dark-mode aware. The rich rendering you expect, with none of the Electron weight.</span><span class="fr">Une vraie app document macOS : multi-fenêtres, Ouvrir&nbsp;récent, compatible mode sombre. Le rendu riche attendu, sans le poids d'Electron.</span><span class="zh">一個真正的 macOS 文件應用程式：多視窗、開啟最近使用、支援深色模式。你期待的完整呈現，卻沒有 Electron 的負擔。</span></p></div></div></div></section>
+<section class="chapter"><div class="wrap"><ul class="specs"><li><h3><span class="en">Instant cold start</span><span class="fr">Démarrage à froid instantané</span><span class="zh">冷啟動即時完成</span></h3><div><p><span class="en">A single SwiftUI scene with bundled web assets — no remote fetch on launch. Opens in under 300&nbsp;ms.</span><span class="fr">Une seule scène SwiftUI avec les ressources web embarquées — aucun appel distant au lancement. Ouvre en moins de 300&nbsp;ms.</span><span class="zh">單一 SwiftUI 場景搭配內嵌的網頁資源——啟動時不需向遠端取檔。開啟時間不到 300&nbsp;毫秒。</span></p></div></li><li><h3><span class="en">Live reload</span><span class="fr">Rechargement live</span><span class="zh">即時重新載入</span></h3><div><p><span class="en">Edit in any external editor; the preview updates in ≈130&nbsp;ms and handles atomic saves cleanly.</span><span class="fr">Éditez dans n'importe quel éditeur externe ; l'aperçu se met à jour en ≈130&nbsp;ms et gère proprement les sauvegardes atomiques.</span><span class="zh">在任何外部編輯器中修改；預覽會在約 130&nbsp;毫秒內更新，並妥善處理原子式儲存。</span></p></div></li><li><h3><span class="en">GitHub-flavoured &amp; themes</span><span class="fr">Saveur GitHub et thèmes</span><span class="zh">GitHub 風格與主題</span></h3><div><p><span class="en"><code>markdown-it</code> with GFM tables and task lists — rendered in GitHub Light, GitHub Dark or a warm Sepia theme, per window.</span><span class="fr"><code>markdown-it</code> avec tableaux GFM et listes de tâches — rendu en GitHub Light, GitHub Dark ou un thème Sépia chaleureux, fenêtre par fenêtre.</span><span class="zh"><code>markdown-it</code> 支援 GFM 表格與任務清單——可逐視窗選擇 GitHub Light、GitHub Dark 或溫暖的 Sepia 主題。</span></p></div></li><li><h3><span class="en">Syntax highlighting</span><span class="fr">Coloration syntaxique</span><span class="zh">語法上色</span></h3><div><p><span class="en"><code>highlight.js</code> with GitHub light &amp; dark themes for fenced code blocks.</span><span class="fr"><code>highlight.js</code> avec thèmes GitHub clair et sombre pour les blocs de code.</span><span class="zh"><code>highlight.js</code> 為圍欄式程式碼區塊提供 GitHub 淺色與深色主題。</span></p></div></li><li><h3><span class="en">Math &amp; diagrams</span><span class="fr">Maths et diagrammes</span><span class="zh">數學式與圖表</span></h3><div><p><span class="en">Inline and display math via KaTeX, plus Mermaid flowcharts, sequence and graph diagrams.</span><span class="fr">Maths en ligne et en bloc via KaTeX, plus les organigrammes, diagrammes de séquence et graphes Mermaid.</span><span class="zh">透過 KaTeX 呈現行內與獨立數學式，另支援 Mermaid 流程圖、循序圖與關係圖。</span></p></div></li><li><h3><span class="en">Built-in editor</span><span class="fr">Éditeur intégré</span><span class="zh">內建編輯器</span></h3><div><p><span class="en">Toggle Preview / Split / Source, with a syntax-highlighted source view, line-number gutter and native save.</span><span class="fr">Basculez entre Aperçu / Scindé / Source, avec vue source colorée, gouttière de numéros de ligne et sauvegarde native.</span><span class="zh">可切換預覽／分割／原始碼檢視，附語法上色的原始碼區、行號欄，以及原生儲存。</span></p></div></li><li><h3><span class="en">Find, zoom &amp; print</span><span class="fr">Recherche, zoom et impression</span><span class="zh">搜尋、縮放與列印</span></h3><div><p><span class="en">Native <code>⌘F</code> search, <code>⌘±</code> content zoom (per-window), and <code>⌘P</code> print / Save&nbsp;as&nbsp;PDF.</span><span class="fr">Recherche native <code>⌘F</code>, zoom du contenu <code>⌘±</code> (par fenêtre), et <code>⌘P</code> impression / Enregistrer&nbsp;en&nbsp;PDF.</span><span class="zh">原生 <code>⌘F</code> 搜尋、<code>⌘±</code> 內容縮放（逐視窗），以及 <code>⌘P</code> 列印／儲存為&nbsp;PDF。</span></p></div></li><li><h3><span class="en">Quick Look</span><span class="fr">Coup d'œil</span><span class="zh">快速查看</span></h3><div><p><span class="en">Select a <code>.md</code> in Finder and hit <b>Space</b> — full rendering with code, math and diagrams, without opening the app.</span><span class="fr">Sélectionnez un <code>.md</code> dans le Finder et appuyez sur <b>Espace</b> — rendu complet avec code, maths et diagrammes, sans ouvrir l'app.</span><span class="zh">在 Finder 中選取 <code>.md</code> 並按 <b>空白鍵</b>——不必開啟應用程式，就能完整呈現程式碼、數學式與圖表。</span></p></div></li><li><h3><span class="en">One-click updates</span><span class="fr">Mises à jour en un clic</span><span class="zh">一鍵更新</span></h3><div><p><span class="en">Sparkle 2 + notarized DMGs + EdDSA signature — <em>Check for Updates…</em> downloads, swaps and relaunches.</span><span class="fr">Sparkle 2 + DMG notariés + signature EdDSA — <em>Rechercher les mises à jour…</em> télécharge, remplace et relance.</span><span class="zh">Sparkle 2 + 已公證的 DMG + EdDSA 簽章——<em>檢查更新…</em>會自動下載、替換並重新啟動。</span></p></div></li></ul></div></section>
+<section class="chapter" id="why"><div class="wrap g12"><div class="ch-head"><h2><span class="en">Built for one job, done fast</span><span class="fr">Faite pour une seule chose, et vite</span><span class="zh">為一件事而生，而且要快</span></h2><p><span class="en">macOS ships no real Markdown previewer — TextEdit shows raw text, and Electron apps take seconds to launch. MarkdownViewer delegates to native APIs wherever possible and drops into JavaScript only for what <code>WKWebView</code> renders for free. The result: a featherweight document app that feels instant.</span><span class="fr">macOS ne livre aucun vrai aperçu Markdown — TextEdit montre le texte brut, et les apps Electron mettent des secondes à démarrer. MarkdownViewer s'appuie sur les API natives partout où c'est possible et ne descend en JavaScript que pour ce que <code>WKWebView</code> rend gratuitement. Résultat : une app document plume, qui paraît instantanée.</span><span class="zh">macOS 沒有內建真正的 Markdown 預覽工具——文字編輯只顯示原始文字，而 Electron 應用程式啟動要好幾秒。MarkdownViewer 盡可能交給原生 API，只在 <code>WKWebView</code> 本來就免費提供的部分才使用 JavaScript。結果是一個輕如羽毛、感覺瞬間開啟的文件應用程式。</span></p></div><div class="ch-body"><ul class="specs"><li><h3>&lt;300 ms</h3><div><p><span class="en">Cold start to rendered</span><span class="fr">Du démarrage à froid au rendu</span><span class="zh">從冷啟動到完成呈現</span></p></div></li><li><h3>≈130 ms</h3><div><p><span class="en">Live-reload latency</span><span class="fr">Latence du rechargement live</span><span class="zh">即時重新載入延遲</span></p></div></li><li><h3>~1.6k</h3><div><p><span class="en">Lines of Swift</span><span class="fr">Lignes de Swift</span><span class="zh">行 Swift 程式碼</span></p></div></li><li><h3>100%</h3><div><p><span class="en">Offline rendering (file://)</span><span class="fr">Rendu hors ligne (file://)</span><span class="zh">離線呈現（file://）</span></p></div></li></ul></div></div></section><section class="chapter" id="how"><div class="wrap g12"><div class="ch-head"><h2><span class="en">How it works</span><span class="fr">Comment ça marche</span><span class="zh">運作方式</span></h2><p><span class="en">A native SwiftUI + AppKit document app on top, the proven JavaScript Markdown pipeline bundled and rendered offline underneath. The best of both worlds.</span><span class="fr">Au-dessus, une app document native SwiftUI + AppKit ; en dessous, le pipeline Markdown JavaScript éprouvé, embarqué et rendu hors ligne. Le meilleur des deux mondes.</span><span class="zh">上層是原生的 SwiftUI + AppKit 文件應用程式，下層是成熟的 JavaScript Markdown 流程，內嵌並離線呈現。兩者的長處兼得。</span></p></div><div class="ch-body"><div class="plates"><figure class="plate wide"><div class="pl"><img src="https://github.com/user-attachments/assets/6fcb6453-2e02-428d-abe1-22e97903c876" alt="MarkdownViewer architecture: from a Finder double-click through SwiftUI DocumentGroup to the bundled WKWebView rendering pipeline" width="1376" height="768" decoding="async"></div><figcaption><span class="fg"><span class="en">Fig.</span><span class="fr">Fig.</span><span class="zh">圖</span> 1</span><span class="en"><b>From double-click to rendered</b> — Finder hands the file to a native <code>DocumentGroup</code>; a <code>WKWebView</code> renders it with markdown-it, highlight.js, KaTeX and Mermaid, all bundled and offline.</span><span class="fr"><b>Du double-clic au rendu</b> — le Finder confie le fichier à un <code>DocumentGroup</code> natif ; une <code>WKWebView</code> le rend avec markdown-it, highlight.js, KaTeX et Mermaid, tous embarqués et hors ligne.</span><span class="zh"><b>從按兩下到完成呈現</b> — Finder 把檔案交給原生的 <code>DocumentGroup</code>；再由 <code>WKWebView</code> 以 markdown-it、highlight.js、KaTeX 與 Mermaid 呈現，全部內嵌且離線。</span></figcaption></figure></div></div></div></section><section class="chapter" id="install"><div class="wrap g12"><div class="ch-head"><h2><span class="en">Up and running in 30 seconds</span><span class="fr">Opérationnel en 30 secondes</span><span class="zh">30 秒內開始使用</span></h2><p><span class="en">No App Store, no sign-in. Notarized by Apple — it launches by double-click, even offline.</span><span class="fr">Pas d'App Store, pas de compte. Notariée par Apple — elle se lance d'un double-clic, même hors ligne.</span><span class="zh">不需 App Store，也不需登入。已通過 Apple 公證——即使離線，按兩下也能啟動。</span></p></div><div class="ch-body"><ol class="steps"><li><p><span class="en"><b>Download.</b> Grab the latest signed <code>.dmg</code> from GitHub Releases and mount it.</span><span class="fr"><b>Télécharger.</b> Récupérez le dernier <code>.dmg</code> signé depuis GitHub Releases et montez-le.</span><span class="zh"><b>下載。</b> 從 GitHub Releases 取得最新的已簽章 <code>.dmg</code> 並掛載。</span></p></li><li><p><span class="en"><b>Install.</b> Drag <code>MarkdownViewer.app</code> into <code>/Applications</code>. That's it.</span><span class="fr"><b>Installer.</b> Glissez <code>MarkdownViewer.app</code> dans <code>/Applications</code>. C'est tout.</span><span class="zh"><b>安裝。</b> 將 <code>MarkdownViewer.app</code> 拖入 <code>/Applications</code>。就這樣。</span></p></li><li><p><span class="en"><b>Set as default.</b> Right-click any <code>.md</code> → Get&nbsp;Info → Open&nbsp;with → <em>Change&nbsp;All…</em></span><span class="fr"><b>Définir par défaut.</b> Clic droit sur un <code>.md</code> → Lire&nbsp;les&nbsp;informations → Ouvrir&nbsp;avec → <em>Tout&nbsp;modifier…</em></span><span class="zh"><b>設為預設開啟方式。</b> 在任一 <code>.md</code> 上按右鍵 → 取得資訊 → 開啟方式 → <em>全部更改…</em></span></p></li></ol></div></div></section>
+<section class="close"><div class="wrap g12"><h2><span class="en">Make Markdown feel native</span><span class="fr">Donnez à Markdown un vrai goût natif</span><span class="zh">讓 Markdown 有原生的手感</span></h2><div class="c-r"><p><span class="en">Free, open-source, and updated automatically. macOS 13 Ventura or later.</span><span class="fr">Gratuite, open source et mise à jour automatiquement. macOS 13 Ventura ou ultérieur.</span><span class="zh">免費、開源，並會自動更新。macOS 13 Ventura 或以上版本。</span></p><div class="acts"><a class="btn" href="https://github.com/vincentlauriat/MarkdownViewer/releases/latest"><span class="en">Download for macOS</span><span class="fr">Télécharger pour macOS</span><span class="zh">下載 macOS 版</span></a><a class="lnk" href="https://github.com/vincentlauriat/MarkdownViewer#readme"><span class="en">Read the docs</span><span class="fr">Lire la doc</span><span class="zh">閱讀說明文件</span><svg class="arw" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a></div></div></div></section>
+</main>
+<footer class="colophon"><div class="wrap g12"><div class="c1"><h2>MarkdownViewer</h2><p><span class="en">Work no.</span><span class="fr">Réalisation n°</span><span class="zh">作品編號</span> <span class="num">15</span> <span class="en">in the works of Vincent Lauriat</span><span class="fr">dans les réalisations de Vincent Lauriat</span><span class="zh">收錄於 Vincent Lauriat 作品集</span>.</p><p><a href="https://vincentlauriat.github.io/#w15"><span class="en">All works</span><span class="fr">Toutes les réalisations</span><span class="zh">全部作品</span></a></p></div><div class="c2"><h2><span class="en">Source</span><span class="fr">Source</span><span class="zh">原始碼</span></h2><p><a href="https://github.com/vincentlauriat/MarkdownViewer">github.com/vincentlauriat/MarkdownViewer</a></p><p><span class="en">MIT License</span><span class="fr">Licence MIT</span><span class="zh">MIT 授權</span> · © 2026 Vincent Lauriat</p><p><span class="en">Also at <a href="https://lauriat.fr/outils/markdownviewer/">lauriat.fr</a>.</span><span class="fr">Aussi sur <a href="https://lauriat.fr/outils/markdownviewer/">lauriat.fr</a>.</span><span class="zh">另見 <a href="https://lauriat.fr/outils/markdownviewer/">lauriat.fr</a>。</span></p></div><div class="c3"><h2><span class="en">About this page</span><span class="fr">À propos de cette page</span><span class="zh">關於本頁</span></h2><p><span class="en">Set in Schibsted Grotesk, on the grid of the book it belongs to.</span><span class="fr">Composée en Schibsted Grotesk, sur la grille du livre auquel elle appartient.</span><span class="zh">以 Schibsted Grotesk 排版，沿用其所屬作品集的網格。</span></p></div></div></footer>
+<script src="/assets/monograph/v1/monograph.js"></script>
 </body>
 </html>
